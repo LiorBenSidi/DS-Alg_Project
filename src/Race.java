@@ -77,7 +77,7 @@ public class Race {
     }
 
     public node<RunnerID> search23(node<RunnerID> x , RunnerID k) {
-        if (x.getLeft() != null) {
+        if (x.getLeft() == null) {
             if ((!(x.getId().isSmaller(k))) && (!(k.isSmaller(x.getId()))))  {
                 return x;
             } else {
