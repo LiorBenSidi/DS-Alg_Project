@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class Runner<K>{
 
     //TODO: implementing "equals" for "node"?
@@ -8,6 +10,43 @@ public class Runner<K>{
     private K id;
     private boolean isLeaf;
     private boolean sentinels;
+    public float getMinRun() {
+        return minRun;
+    }
+
+    public void setMinRun(float minRun) {
+        this.minRun = minRun;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
+    }
+
+    private float minRun;
+    private int size;
+    public ArrayList<Run> getRuns() {
+        return runs;
+    }
+
+    public void setRuns(ArrayList<Run> runs) {
+        this.runs = runs;
+    }
+
+    private ArrayList<Run> runs;
+
+    public int getHeapSize() {
+        return heapSize;
+    }
+
+    public void setHeapSize(int heapSize) {
+        this.heapSize = heapSize;
+    }
+
+    private int heapSize;
 
     public boolean isLeaf() {
         return isLeaf;

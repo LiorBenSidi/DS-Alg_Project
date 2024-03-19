@@ -1,7 +1,14 @@
 public class Race {
-    private Runner<RunnerID> root;
-    public void setRoot(Runner<RunnerID> root) {
-        this.root = root;
+    private Runner<RunnerID> rootMin;
+    private Runner<RunnerID> rootAvg;
+
+    public Runner<RunnerID> getRootMin() {
+        return rootMin;
+    }
+
+    public void setRootMin(Runner<RunnerID> root) {
+        // TODO: check if this is the right way to do it
+        this.rootMin = rootMin;
     }
     public void init()
     {
@@ -11,69 +18,101 @@ public class Race {
     public void addRunner(RunnerID id)
     {
         Runner<RunnerID> z = new Runner<RunnerID>(null, null, null, id, true, false);
-        insert23(root, z);
+        insert23(rootMin, z);
+        insert23(rootAvg, z);
+
 
         throw new java.lang.UnsupportedOperationException("not implemented");
     }
 
     public void removeRunner(RunnerID id)
     {
-        Runner<RunnerID> x = search23(root, id);
-        delete23(root, x);
+        Runner<RunnerID> y = search23(rootMin, id);
+        delete23(rootMin, y);
+
+        Runner<RunnerID> x = search23(rootAvg, id);
+        delete23(rootAvg, x);
+
         throw new java.lang.UnsupportedOperationException("not implemented");
     }
 
     public void addRunToRunner(RunnerID id, float time)
     {
-        throw new java.lang.UnsupportedOperationException("not implemented");
+        Runner<RunnerID> y = search23(rootMin, id);
+        if (y.getMinRun() > time) {
+            y.setMinRun(time);
+        }
+        heapInsert(y, time);
+
+        Runner<RunnerID> x = search23(rootAvg, id);
+        heapInsert(x, time);
+        x.setMinRun((x.getMinRun() * (x.getHeapSize() - 1) + time) / x.getHeapSize());
     }
 
     public void removeRunFromRunner(RunnerID id, float time)
     {
-        throw new java.lang.UnsupportedOperationException("not implemented");
+        Runner<RunnerID> y = search23(rootMin, id);
+        if (y.getMinRun() == time) {
+            heapExtractMin(y);
+            y.setMinRun(y.getRuns().get(1).getTime());
+        } else {
+            heapDecreaseKey(y, y.getRuns().indexOf(time), Float.MIN_VALUE);
+            heapExtractMin(y);
+            heapify(y, y.getRuns().indexOf(time));
+        }
+
+        Runner<RunnerID> x = search23(rootAvg, id);
+        heapDecreaseKey(x, x.getRuns().indexOf(time), Float.MIN_VALUE);
+        heapExtractMin(x);
+        heapify(x, x.getRuns().indexOf(time));
+        x.setMinRun((x.getMinRun() * (x.getHeapSize() + 1) - time) / x.getHeapSize());
     }
 
     public RunnerID getFastestRunnerAvg()
     {
-
-        throw new java.lang.UnsupportedOperationException("not implemented");
+        // TODO: WE NEED TO STORE THE FASTEST RUNNER AVG IN THE TREE IN THE ROOT
+        return rootAvg.getId();
     }
 
     public RunnerID getFastestRunnerMin()
     {
-
-        throw new java.lang.UnsupportedOperationException("not implemented");
+        // TODO: WE NEED TO STORE THE FASTEST RUNNER IN THE TREE IN THE ROOT
+        return rootMin.getId();
     }
 
     public float getMinRun(RunnerID id)
     {
-
-        throw new java.lang.UnsupportedOperationException("not implemented");
+        return search23(rootMin, id).getRuns().get(1).getTime();
     }
     public float getAvgRun(RunnerID id){
-        throw new java.lang.UnsupportedOperationException("not implemented");
+        return search23(rootAvg, id).getMinRun();
     }
 
     public int getRankAvg(RunnerID id)
     {
+        Rank(search23(rootAvg, id));
         throw new java.lang.UnsupportedOperationException("not implemented");
     }
 
     public int getRankMin(RunnerID id)
     {
+        Rank(search23(rootMin, id));
         throw new java.lang.UnsupportedOperationException("not implemented");
     }
 
     /** 2_3 tree functions from the lecture: **/
     public void init23()
     {
-        root = new Runner<RunnerID>(null, null, null, null, false, true);
-        Runner<RunnerID> left = new Runner<RunnerID>(root, null, null, null, true, true);
-        Runner<RunnerID> middle = new Runner<RunnerID>(root, null, null, null, true, true);
+        rootMin = new Runner<RunnerID>(null, null, null, null, false, true);
+        rootAvg = new Runner<RunnerID>(null, null, null, null, false, true);
+        Runner<RunnerID> left = new Runner<RunnerID>(rootMin, null, null, null, true, true);
+        Runner<RunnerID> middle = new Runner<RunnerID>(rootMin, null, null, null, true, true);
 
         // Set the left and middle nodes for the current node
-        root.setLeft(left);
-        root.setMiddle(middle);
+        rootMin.setLeft(left);
+        rootAvg.setLeft(left);
+        rootMin.setMiddle(middle);
+        rootAvg.setMiddle(middle);
     }
 
     public Runner<RunnerID> search23(Runner<RunnerID> x , RunnerID k) {
@@ -84,19 +123,22 @@ public class Race {
                 return null;
             }
         }
-        if ((((!(k.isSmaller(x.getLeft().getId()))) &&
+        if (((((!(k.isSmaller(x.getLeft().getId()))) &&
                 (!(x.getLeft().getId().isSmaller(k)))))
                 ||
-                k.isSmaller(x.getLeft().getId())) {
+                k.isSmaller(x.getLeft().getId()))
+                &&
+                (!x.isSentinels())) {
             return search23(x.getLeft(), k);
-        } else if ((((!(k.isSmaller(x.getMiddle().getId()))) &&
+        } else if (((((!(k.isSmaller(x.getMiddle().getId()))) &&
                 (!(x.getMiddle().getId().isSmaller(k)))))
                 ||
-                k.isSmaller(x.getMiddle().getId())) {
+                k.isSmaller(x.getMiddle().getId()))
+                &&
+                (!x.isSentinels())) {
             return search23(x.getMiddle(), k);
         } else {
-            return search23(x.getRight(), k); //TODO: we need to check that the
-            // algorithm is still valid without the sentinels
+            return search23(x.getRight(), k);
         }
     }
 
@@ -139,13 +181,13 @@ public class Race {
 
     public void updateKey23(Runner<RunnerID> x)
     {
-        x.setId(x.getLeft().getId());
+        x.setMinRun(x.getLeft().getMinRun());
 
         if (x.getMiddle() != null) {
-            x.setId(x.getMiddle().getId());
+            x.setMinRun(x.getMiddle().getMinRun());
         }
         if (x.getRight() != null) {
-            x.setId(x.getRight().getId());
+            x.setMinRun(x.getRight().getMinRun());
         }
     }
 
@@ -172,9 +214,9 @@ public class Race {
         Runner<RunnerID> r = x.getRight();
 
         if (r == null) {
-            if (z.getId().isSmaller(l.getId())) {
+            if (z.getMinRun() < (l.getMinRun())) {
                 setChildren23(x, z, l, m);
-            } else if (z.getLeft().getId().isSmaller(m.getId())) {
+            } else if (z.getLeft().getMinRun() < (m.getMinRun())) {
                 setChildren23(x, l, z, m);
             } else {
                 setChildren23(x, l, m, z);
@@ -182,13 +224,13 @@ public class Race {
             return null;
         }
         Runner<RunnerID> y = new Runner<RunnerID>(null, null, null, null, true, false);
-        if (z.getId().isSmaller(l.getId())) {
+        if (z.getMinRun() < (l.getMinRun())) {
             setChildren23(x, z, l, null);
             setChildren23(y , m, r, null);
-        } else if (z.getId().isSmaller(m.getId())) {
+        } else if (z.getMinRun() < (m.getMinRun())) {
             setChildren23(x, l, z, null);
             setChildren23(y, m, r, null);
-        } else if (z.getId().isSmaller(r.getId())) {
+        } else if (z.getMinRun() < (r.getMinRun())) {
             setChildren23(x, l, m, null);
             setChildren23(y, z, r, null);
         } else {
@@ -199,13 +241,13 @@ public class Race {
         return y;
     }
 
-    public void insert23(Runner<RunnerID> root, Runner<RunnerID> z)
-    {
+    public void insert23(Runner<RunnerID> root, Runner<RunnerID> z) {
+        // TODO: check if this is the right way to do it
         Runner<RunnerID> y = root;
         while (y.getLeft() != null) {
-            if (z.getId().isSmaller(y.getLeft().getId())) {
+            if (z.getMinRun() < (y.getLeft().getMinRun())) {
                 y = y.getLeft();
-            } else if (z.getId().isSmaller(y.getMiddle().getId())) {
+            } else if (z.getMinRun() < (y.getMiddle().getMinRun())) {
                 y = y.getMiddle();
             } else {
                 y = y.getRight();
@@ -216,6 +258,7 @@ public class Race {
 
         z = insertAndSplit23(x, z);
 
+        // TODO: check if this is the right way to do it
         while (!(x.equals(root))) {
             x = x.getParent();
             if (z != null) {
@@ -227,14 +270,16 @@ public class Race {
 
         if (z != null) {
             Runner<RunnerID> w = new Runner<RunnerID>(null, null,
-                                                  null, null, false, false);
+                                null, null, false, false);
             setChildren23(w, x, z, null);
-            setRoot(w);
+            setRootMin(w);
         }
     }
 
     public Runner<RunnerID> borrowOrMerge23(Runner<RunnerID> y) {
         Runner<RunnerID> z = y.getParent();
+
+        // TODO: check if this is the right way to do it
         if (y.equals(z.getLeft())) {
             Runner<RunnerID> x = z.getMiddle();
             if (x.getRight() != null) {
@@ -254,7 +299,7 @@ public class Race {
                 setChildren23(x, x.getLeft(), x.getMiddle(), null);
             } else {
                 setChildren23(x, x.getLeft(), x.getMiddle(), y.getLeft());
-                /* delete y? */
+
                 setChildren23(z, x, z.getRight(), null);
             }
             return z;
@@ -286,7 +331,7 @@ public class Race {
                 if (y != root) {
                     y = borrowOrMerge23(y);
                 } else {
-                    setRoot(y.getLeft());
+                    setRootMin(y.getLeft());
                     /*delete x* ?*/
                     return;
                 }
@@ -298,8 +343,73 @@ public class Race {
     }
 
     /** 2_3 tree functions from the tutorial: **/
-    public int Rank() {
 
-        return 0;
+    public void heapInsert(Runner<RunnerID> runner, float time) {
+        int s = runner.getHeapSize() + 1;
+        runner.getRuns().set(s, new Run(runner.getId(),time));
+        runner.getRuns().get(s).setRunnerID(null); //TODO: check if this is the right way to do it
+        runner.setHeapSize(s);
+        heapDecreaseKey(runner, s, time);
+    }
+
+    public void heapDecreaseKey(Runner<RunnerID> runner, int i, float time) {
+        if (time > runner.getRuns().get(i).getTime()) {
+            System.out.println("new key is larger than current key");
+        }
+        runner.getRuns().get(i).setTime(time);
+        while ((i > 1) && (runner.getRuns().get(i/2).getTime() > runner.getRuns().get(i).getTime())) {
+            Run temp = runner.getRuns().get(i);
+            runner.getRuns().set(i, runner.getRuns().get(i/2));
+            runner.getRuns().set(i/2, temp);
+            i = i/2;
+        }
+    }
+
+    public float heapExtractMin(Runner<RunnerID> runner) {
+        if (runner.getHeapSize() < 1) {
+            System.out.println("heap underflow");
+        }
+        float min = runner.getRuns().get(1).getTime();
+        runner.getRuns().set(1, runner.getRuns().get(runner.getHeapSize()));
+        runner.setHeapSize(runner.getHeapSize() - 1);
+        heapify(runner, 1);
+        return min;
+    }
+
+    public void heapify(Runner<RunnerID> runner, int i) {
+        int l = 2*i;
+        int r = 2*i + 1;
+        int smallest;
+        if ((l <= runner.getHeapSize()) && (runner.getRuns().get(l).getTime() < runner.getRuns().get(i).getTime())) {
+            smallest = l;
+        } else {
+            smallest = i;
+        }
+        if ((r <= runner.getHeapSize()) && (runner.getRuns().get(r).getTime() < runner.getRuns().get(smallest).getTime())) {
+            smallest = r;
+        }
+        if (smallest != i) {
+            Run temp = runner.getRuns().get(i);
+            runner.getRuns().set(i, runner.getRuns().get(smallest));
+            runner.getRuns().set(smallest, temp);
+            heapify(runner, smallest);
+        }
+    }
+
+    public int Rank(Runner<RunnerID> runner) {
+        int rank = 1;
+        Runner<RunnerID> y = runner.getParent();
+        while (y != null) {
+            if (runner.equals(y.getMiddle())) {
+                rank = rank + y.getLeft().getSize();
+            }
+            else if (runner.equals(y.getRight())) {
+                rank = rank + y.getLeft().getSize() + y.getMiddle().getSize();
+            }
+            runner = y;
+            y = y.getParent();
+        }
+        return rank;
     }
 }
+
