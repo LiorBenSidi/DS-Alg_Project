@@ -1,6 +1,6 @@
 public class Race {
-    private node<RunnerID> root;
-    public void setRoot(node<RunnerID> root) {
+    private Runner<RunnerID> root;
+    public void setRoot(Runner<RunnerID> root) {
         this.root = root;
     }
     public void init()
@@ -10,7 +10,7 @@ public class Race {
     }
     public void addRunner(RunnerID id)
     {
-        node<RunnerID> z = new node<RunnerID>(null, null, null, id);
+        Runner<RunnerID> z = new Runner<RunnerID>(null, null, null, id, true, false);
         insert23(root, z);
 
         throw new java.lang.UnsupportedOperationException("not implemented");
@@ -18,7 +18,7 @@ public class Race {
 
     public void removeRunner(RunnerID id)
     {
-        node<RunnerID> x = search23(root, id);
+        Runner<RunnerID> x = search23(root, id);
         delete23(root, x);
         throw new java.lang.UnsupportedOperationException("not implemented");
     }
@@ -67,17 +67,17 @@ public class Race {
     /** 2_3 tree functions from the lecture: **/
     public void init23()
     {
-        root = new node<RunnerID>(null, null, null, null);
-        node<RunnerID> left = new node<RunnerID>(root, null, null, null);
-        node<RunnerID> middle = new node<RunnerID>(root, null, null, null);
+        root = new Runner<RunnerID>(null, null, null, null, false, true);
+        Runner<RunnerID> left = new Runner<RunnerID>(root, null, null, null, true, true);
+        Runner<RunnerID> middle = new Runner<RunnerID>(root, null, null, null, true, true);
 
         // Set the left and middle nodes for the current node
         root.setLeft(left);
         root.setMiddle(middle);
     }
 
-    public node<RunnerID> search23(node<RunnerID> x , RunnerID k) {
-        if (x.getLeft() == null) {
+    public Runner<RunnerID> search23(Runner<RunnerID> x , RunnerID k) {
+        if (x.isLeaf()) {
             if ((!(x.getId().isSmaller(k))) && (!(k.isSmaller(x.getId()))))  {
                 return x;
             } else {
@@ -100,9 +100,9 @@ public class Race {
         }
     }
 
-    public node<RunnerID> minimum23(node<RunnerID> root) {
-        node<RunnerID> x = root;
-        while (x.getLeft() != null) {
+    public Runner<RunnerID> minimum23(Runner<RunnerID> root) {
+        Runner<RunnerID> x = root;
+        while (!x.isLeaf()) {
             x = x.getLeft();
         }
         x = x.getParent().getMiddle();
@@ -113,15 +113,15 @@ public class Race {
         }
     }
 
-    public node<RunnerID> successor23(node<RunnerID> x) {
-        node<RunnerID> z = x.getParent();
+    public Runner<RunnerID> successor23(Runner<RunnerID> x) {
+        Runner<RunnerID> z = x.getParent();
         while ((x.equals(z.getRight()))
                 ||
                 ((z.getRight() == null) && (x.equals(z.getMiddle())))) {
             x = z;
             z = z.getParent();
         }
-        node<RunnerID> y;
+        Runner<RunnerID> y;
         if (x.equals(z.getLeft())) {
             y = z.getMiddle();
         } else {
@@ -137,7 +137,7 @@ public class Race {
         }
     }
 
-    public void updateKey23(node<RunnerID> x)
+    public void updateKey23(Runner<RunnerID> x)
     {
         x.setId(x.getLeft().getId());
 
@@ -147,11 +147,10 @@ public class Race {
         if (x.getRight() != null) {
             x.setId(x.getRight().getId());
         }
-        throw new java.lang.UnsupportedOperationException("not implemented");
     }
 
-    public void setChildren23(node<RunnerID> x, node<RunnerID> l,
-                              node<RunnerID> m, node<RunnerID> r)
+    public void setChildren23(Runner<RunnerID> x, Runner<RunnerID> l,
+                              Runner<RunnerID> m, Runner<RunnerID> r)
     {
         x.setLeft(l);
         x.setMiddle(m);
@@ -166,11 +165,11 @@ public class Race {
         updateKey23(x);
     }
 
-    public node<RunnerID> insertAndSplit23(node<RunnerID> x, node<RunnerID> z)
+    public Runner<RunnerID> insertAndSplit23(Runner<RunnerID> x, Runner<RunnerID> z)
     {
-        node<RunnerID> l = x.getLeft();
-        node<RunnerID> m = x.getMiddle();
-        node<RunnerID> r = x.getRight();
+        Runner<RunnerID> l = x.getLeft();
+        Runner<RunnerID> m = x.getMiddle();
+        Runner<RunnerID> r = x.getRight();
 
         if (r == null) {
             if (z.getId().isSmaller(l.getId())) {
@@ -182,7 +181,7 @@ public class Race {
             }
             return null;
         }
-        node<RunnerID> y = new node<RunnerID>(null, null, null, null);
+        Runner<RunnerID> y = new Runner<RunnerID>(null, null, null, null, true, false);
         if (z.getId().isSmaller(l.getId())) {
             setChildren23(x, z, l, null);
             setChildren23(y , m, r, null);
@@ -200,9 +199,9 @@ public class Race {
         return y;
     }
 
-    public void insert23(node<RunnerID> root, node<RunnerID> z)
+    public void insert23(Runner<RunnerID> root, Runner<RunnerID> z)
     {
-        node<RunnerID> y = root;
+        Runner<RunnerID> y = root;
         while (y.getLeft() != null) {
             if (z.getId().isSmaller(y.getLeft().getId())) {
                 y = y.getLeft();
@@ -213,7 +212,7 @@ public class Race {
             }
         }
 
-        node<RunnerID> x = y.getParent();
+        Runner<RunnerID> x = y.getParent();
 
         z = insertAndSplit23(x, z);
 
@@ -227,17 +226,17 @@ public class Race {
         }
 
         if (z != null) {
-            node<RunnerID> w = new node<RunnerID>(null, null,
-                                                  null, null);
+            Runner<RunnerID> w = new Runner<RunnerID>(null, null,
+                                                  null, null, false, false);
             setChildren23(w, x, z, null);
             setRoot(w);
         }
     }
 
-    public node<RunnerID> borrowOrMerge23(node<RunnerID> y) {
-        node<RunnerID> z = y.getParent();
+    public Runner<RunnerID> borrowOrMerge23(Runner<RunnerID> y) {
+        Runner<RunnerID> z = y.getParent();
         if (y.equals(z.getLeft())) {
-            node<RunnerID> x = z.getMiddle();
+            Runner<RunnerID> x = z.getMiddle();
             if (x.getRight() != null) {
                 setChildren23(y, y.getLeft(), x.getLeft(), null);
                 setChildren23(x, x.getMiddle(), x.getRight(), null);
@@ -249,7 +248,7 @@ public class Race {
             return z;
         }
         if (y.equals(z.getMiddle())) {
-            node<RunnerID> x = z.getLeft();
+            Runner<RunnerID> x = z.getLeft();
             if (x.getRight() != null) {
                 setChildren23(y, x.getRight(), y.getLeft(), null);
                 setChildren23(x, x.getLeft(), x.getMiddle(), null);
@@ -260,7 +259,7 @@ public class Race {
             }
             return z;
         }
-        node<RunnerID> x = z.getMiddle();
+        Runner<RunnerID> x = z.getMiddle();
         if (x.getRight() != null) {
             setChildren23(y, x.getRight(), y.getLeft(), null);
             setChildren23(x, x.getLeft(), x.getMiddle(), null);
@@ -272,8 +271,8 @@ public class Race {
         return z;
     }
 
-    public void delete23(node<RunnerID> root, node<RunnerID> x) {
-        node<RunnerID> y = x.getParent();
+    public void delete23(Runner<RunnerID> root, Runner<RunnerID> x) {
+        Runner<RunnerID> y = x.getParent();
         if (x.equals(y.getLeft())) {
             setChildren23(y, y.getMiddle(), y.getRight(), null);
         } else if (x.equals(y.getMiddle())) {
