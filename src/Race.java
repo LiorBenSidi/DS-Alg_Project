@@ -8,21 +8,17 @@ public class Race {
 
     public void setRootMin(Runner<RunnerID> root) {
         // TODO: check if this is the right way to do it
-        this.rootMin = rootMin;
+        this.rootMin = root;
     }
     public void init()
     {
         init23();
-        throw new java.lang.UnsupportedOperationException("not implemented");
     }
     public void addRunner(RunnerID id)
     {
         Runner<RunnerID> z = new Runner<RunnerID>(null, null, null, id, true, false);
         insert23(rootMin, z);
         insert23(rootAvg, z);
-
-
-        throw new java.lang.UnsupportedOperationException("not implemented");
     }
 
     public void removeRunner(RunnerID id)
@@ -32,12 +28,25 @@ public class Race {
 
         Runner<RunnerID> x = search23(rootAvg, id);
         delete23(rootAvg, x);
-
-        throw new java.lang.UnsupportedOperationException("not implemented");
     }
 
     public void addRunToRunner(RunnerID id, float time)
     {
+        // Update the runner in the minimum tree
+        Runner<RunnerID> minRunner = search23(rootMin, id);
+        if (minRunner != null) {
+            minRunner.addRun(time);
+            // Rebalance the minimum tree if necessary
+        }
+
+        // Update the runner in the average tree
+        Runner<RunnerID> avgRunner = search23(rootAvg, id);
+        if (avgRunner != null) {
+            avgRunner.addRun(time);
+            // Rebalance the average tree if necessary
+        }
+
+        /*
         Runner<RunnerID> y = search23(rootMin, id);
         if (y.getMinRun() > time) {
             y.setMinRun(time);
@@ -47,10 +56,26 @@ public class Race {
         Runner<RunnerID> x = search23(rootAvg, id);
         heapInsert(x, time);
         x.setMinRun((x.getMinRun() * (x.getHeapSize() - 1) + time) / x.getHeapSize());
+         */
     }
 
     public void removeRunFromRunner(RunnerID id, float time)
     {
+        // Remove the run from the runner in the minimum tree
+        Runner<RunnerID> minRunner = search23(rootMin, id);
+        if (minRunner != null) {
+            minRunner.removeRun(time);
+            // Rebalance the minimum tree if necessary
+        }
+
+        // Remove the run from the runner in the average tree
+        Runner<RunnerID> avgRunner = search23(rootAvg, id);
+        if (avgRunner != null) {
+            avgRunner.removeRun(time);
+            // Rebalance the average tree if necessary
+        }
+
+        /*
         Runner<RunnerID> y = search23(rootMin, id);
         if (y.getMinRun() == time) {
             heapExtractMin(y);
@@ -66,43 +91,84 @@ public class Race {
         heapExtractMin(x);
         heapify(x, x.getRuns().indexOf(time));
         x.setMinRun((x.getMinRun() * (x.getHeapSize() + 1) - time) / x.getHeapSize());
+         */
     }
 
     public RunnerID getFastestRunnerAvg()
     {
         // TODO: WE NEED TO STORE THE FASTEST RUNNER AVG IN THE TREE IN THE ROOT
-        return rootAvg.getId();
+        if (rootAvg != null && rootAvg.getId() != null) {
+            return rootAvg.getId();
+        } else {
+            return null; // Indicates that there are no runners
+        }
     }
 
     public RunnerID getFastestRunnerMin()
     {
         // TODO: WE NEED TO STORE THE FASTEST RUNNER IN THE TREE IN THE ROOT
-        return rootMin.getId();
+        if (rootMin != null && rootMin.getId() != null) {
+            return rootMin.getId();
+        } else {
+            return null; // Or handle the case where there are no runners
+        }
     }
 
     public float getMinRun(RunnerID id)
     {
+        Runner<RunnerID> runner = search23(rootMin, id);
+        if (runner != null && runner.getRunCount() > 0) {
+            return runner.getRuns()[0].getTime(); // Assuming the runs are sorted
+        } else {
+            return Float.MAX_VALUE; // Or some other indication that the runner has no runs
+        }
+
+        /*
         return search23(rootMin, id).getRuns().get(1).getTime();
+         */
     }
     public float getAvgRun(RunnerID id){
+        Runner<RunnerID> runner = search23(rootAvg, id);
+        if (runner != null) {
+            return runner.getAvgRun();
+        } else {
+            return Float.MAX_VALUE; // Or handle the case where the runner is not found
+        }
+
+        /*
         return search23(rootAvg, id).getMinRun();
+         */
     }
 
     public int getRankAvg(RunnerID id)
     {
-        Rank(search23(rootAvg, id));
-        throw new java.lang.UnsupportedOperationException("not implemented");
+        return Rank(search23(rootAvg, id), rootAvg);
     }
 
     public int getRankMin(RunnerID id)
     {
-        Rank(search23(rootMin, id));
-        throw new java.lang.UnsupportedOperationException("not implemented");
+        return Rank(search23(rootMin, id), rootMin);
     }
 
     /** 2_3 tree functions from the lecture: **/
     public void init23()
     {
+        // Initialize the root nodes for the minimum and average trees
+        rootMin = new Runner<RunnerID>(null, null, null, null, true, false);
+        rootAvg = new Runner<RunnerID>(null, null, null, null, true, false);
+
+        // Create separate left and middle nodes for each tree
+        Runner<RunnerID> leftMin = new Runner<RunnerID>(rootMin, null, null, null, true, false);
+        Runner<RunnerID> middleMin = new Runner<RunnerID>(rootMin, null, null, null, true, false);
+        Runner<RunnerID> leftAvg = new Runner<RunnerID>(rootAvg, null, null, null, true, false);
+        Runner<RunnerID> middleAvg = new Runner<RunnerID>(rootAvg, null, null, null, true, false);
+
+        // Set the left and middle nodes for each root node
+        rootMin.setLeft(leftMin);
+        rootMin.setMiddle(middleMin);
+        rootAvg.setLeft(leftAvg);
+        rootAvg.setMiddle(middleAvg);
+        /*
         rootMin = new Runner<RunnerID>(null, null, null, null, false, true);
         rootAvg = new Runner<RunnerID>(null, null, null, null, false, true);
         Runner<RunnerID> left = new Runner<RunnerID>(rootMin, null, null, null, true, true);
@@ -113,6 +179,7 @@ public class Race {
         rootAvg.setLeft(left);
         rootMin.setMiddle(middle);
         rootAvg.setMiddle(middle);
+         */
     }
 
     public Runner<RunnerID> search23(Runner<RunnerID> x , RunnerID k) {
@@ -344,6 +411,8 @@ public class Race {
 
     /** 2_3 tree functions from the tutorial: **/
 
+    // Heap functions
+    /*
     public void heapInsert(Runner<RunnerID> runner, float time) {
         int s = runner.getHeapSize() + 1;
         runner.getRuns().set(s, new Run(runner.getId(),time));
@@ -395,8 +464,38 @@ public class Race {
             heapify(runner, smallest);
         }
     }
+     */
 
-    public int Rank(Runner<RunnerID> runner) {
+    public int Rank(Runner<RunnerID> runner, Runner<RunnerID> root) {
+        int rank = 1;
+        Runner<RunnerID> current = root;
+        while (current != null) {
+            if (current.getLeft() == null) {
+                if (runner.equals(current)) {
+                    return rank;
+                }
+                rank++;
+                current = current.getRight();
+            } else {
+                Runner<RunnerID> predecessor = current.getLeft();
+                while (predecessor.getRight() != null && predecessor.getRight() != current) {
+                    predecessor = predecessor.getRight();
+                }
+                if (predecessor.getRight() == null) {
+                    predecessor.setRight(current);
+                    current = current.getLeft();
+                } else {
+                    predecessor.setRight(null);
+                    if (runner.equals(current)) {
+                        return rank;
+                    }
+                    rank++;
+                    current = current.getRight();
+                }
+            }
+        }
+        return -1; // Runner not found
+        /*
         int rank = 1;
         Runner<RunnerID> y = runner.getParent();
         while (y != null) {
@@ -410,6 +509,7 @@ public class Race {
             y = y.getParent();
         }
         return rank;
+         */
     }
 }
 
