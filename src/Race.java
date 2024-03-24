@@ -7,7 +7,6 @@ public class Race {
     }
 
     public void setRootMin(Runner<RunnerID> root) {
-        // TODO: check if this is the right way to do it
         this.rootMin = root;
     }
     public void init()
@@ -96,7 +95,6 @@ public class Race {
 
     public RunnerID getFastestRunnerAvg()
     {
-        // TODO: WE NEED TO STORE THE FASTEST RUNNER AVG IN THE TREE IN THE ROOT
         if (rootAvg != null && rootAvg.getId() != null) {
             return rootAvg.getId();
         } else {
@@ -106,7 +104,6 @@ public class Race {
 
     public RunnerID getFastestRunnerMin()
     {
-        // TODO: WE NEED TO STORE THE FASTEST RUNNER IN THE TREE IN THE ROOT
         if (rootMin != null && rootMin.getId() != null) {
             return rootMin.getId();
         } else {
@@ -409,9 +406,53 @@ public class Race {
         }
     }
 
-    /** 2_3 tree functions from the tutorial: **/
+    public int Rank(Runner<RunnerID> runner, Runner<RunnerID> root) {
+        int rank = 1;
+        Runner<RunnerID> current = root;
+        while (current != null) {
+            if (current.getLeft() == null) {
+                if (runner.equals(current)) {
+                    return rank;
+                }
+                rank++;
+                current = current.getRight();
+            } else {
+                Runner<RunnerID> predecessor = current.getLeft();
+                while (predecessor.getRight() != null && predecessor.getRight() != current) {
+                    predecessor = predecessor.getRight();
+                }
+                if (predecessor.getRight() == null) {
+                    predecessor.setRight(current);
+                    current = current.getLeft();
+                } else {
+                    predecessor.setRight(null);
+                    if (runner.equals(current)) {
+                        return rank;
+                    }
+                    rank++;
+                    current = current.getRight();
+                }
+            }
+        }
+        return -1; // Runner not found
+        /*
+        int rank = 1;
+        Runner<RunnerID> y = runner.getParent();
+        while (y != null) {
+            if (runner.equals(y.getMiddle())) {
+                rank = rank + y.getLeft().getSize();
+            }
+            else if (runner.equals(y.getRight())) {
+                rank = rank + y.getLeft().getSize() + y.getMiddle().getSize();
+            }
+            runner = y;
+            y = y.getParent();
+        }
+        return rank;
+         */
+    }
 
-    // Heap functions
+    /** Heap functions **/
     /*
     public void heapInsert(Runner<RunnerID> runner, float time) {
         int s = runner.getHeapSize() + 1;
@@ -465,51 +506,5 @@ public class Race {
         }
     }
      */
-
-    public int Rank(Runner<RunnerID> runner, Runner<RunnerID> root) {
-        int rank = 1;
-        Runner<RunnerID> current = root;
-        while (current != null) {
-            if (current.getLeft() == null) {
-                if (runner.equals(current)) {
-                    return rank;
-                }
-                rank++;
-                current = current.getRight();
-            } else {
-                Runner<RunnerID> predecessor = current.getLeft();
-                while (predecessor.getRight() != null && predecessor.getRight() != current) {
-                    predecessor = predecessor.getRight();
-                }
-                if (predecessor.getRight() == null) {
-                    predecessor.setRight(current);
-                    current = current.getLeft();
-                } else {
-                    predecessor.setRight(null);
-                    if (runner.equals(current)) {
-                        return rank;
-                    }
-                    rank++;
-                    current = current.getRight();
-                }
-            }
-        }
-        return -1; // Runner not found
-        /*
-        int rank = 1;
-        Runner<RunnerID> y = runner.getParent();
-        while (y != null) {
-            if (runner.equals(y.getMiddle())) {
-                rank = rank + y.getLeft().getSize();
-            }
-            else if (runner.equals(y.getRight())) {
-                rank = rank + y.getLeft().getSize() + y.getMiddle().getSize();
-            }
-            runner = y;
-            y = y.getParent();
-        }
-        return rank;
-         */
-    }
 }
 
