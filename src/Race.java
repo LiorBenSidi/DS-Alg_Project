@@ -1,6 +1,7 @@
 public class Race {
-    private Runner<RunnerID> rootMin;
-    private Runner<RunnerID> rootAvg;
+    // Initialize the root nodes for the minimum and average trees
+    private Runner<RunnerID> rootMin = new Runner<RunnerID>(null, null, null, null, true, false);
+    private Runner<RunnerID> rootAvg = new Runner<RunnerID>(null, null, null, null, true, false);
 
     public Runner<RunnerID> getRootMin() {
         return rootMin;
@@ -150,10 +151,6 @@ public class Race {
     /** 2_3 tree functions from the lecture: **/
     public void init23()
     {
-        // Initialize the root nodes for the minimum and average trees
-        rootMin = new Runner<RunnerID>(null, null, null, null, true, false);
-        rootAvg = new Runner<RunnerID>(null, null, null, null, true, false);
-
         // Create separate left and middle nodes for each tree
         Runner<RunnerID> leftMin = new Runner<RunnerID>(rootMin, null, null, null, true, false);
         Runner<RunnerID> middleMin = new Runner<RunnerID>(rootMin, null, null, null, true, false);
@@ -245,6 +242,9 @@ public class Race {
 
     public void updateKey23(Runner<RunnerID> x)
     {
+        if (x.getLeft() == null) {
+            return;
+        }
         x.setMinRun(x.getLeft().getMinRun());
 
         if (x.getMiddle() != null) {
@@ -261,7 +261,9 @@ public class Race {
         x.setLeft(l);
         x.setMiddle(m);
         x.setRight(r);
-        l.setParent(x);
+        if (l != null) {
+            l.setParent(x);
+        }
         if (m != null) {
             m.setParent(x);
         }
@@ -308,8 +310,8 @@ public class Race {
     public void insert23(Runner<RunnerID> root, Runner<RunnerID> z) {
         // TODO: check if this is the right way to do it
         Runner<RunnerID> y = root;
-        while (y.getLeft() != null) {
-            if (z.getMinRun() < (y.getLeft().getMinRun())) {
+        while (y != null && !y.isLeaf()) {
+            if (y.getLeft() != null && (z.getMinRun() < (y.getLeft().getMinRun()))) {
                 y = y.getLeft();
             } else if (z.getMinRun() < (y.getMiddle().getMinRun())) {
                 y = y.getMiddle();
@@ -318,15 +320,22 @@ public class Race {
             }
         }
 
-        Runner<RunnerID> x = y.getParent();
+        Runner<RunnerID> x = new Runner<RunnerID>(null, null, null, null, false, false);
+        if (y != null) {
+            x = y.getParent();
+        }
 
-        z = insertAndSplit23(x, z);
+        if (x != null) {
+            z = insertAndSplit23(x, z);
+        }
 
         // TODO: check if this is the right way to do it
-        while (!(x.equals(root))) {
+        while (x != null && !(x.equals(root))) {
             x = x.getParent();
             if (z != null) {
-                z = insertAndSplit23(x, z);
+                if (z.getParent() != null) {
+                    z = insertAndSplit23(x, z);
+                }
             } else {
                 updateKey23(x);
             }
