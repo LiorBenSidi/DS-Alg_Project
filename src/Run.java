@@ -1,25 +1,21 @@
-public class Run<K> {
-    private K runnerID;
-    private float time;
+public class Run {
+    private float Time; //Time of the run
+    private final RunnerID ID; //ID of the runner
 
-    public Run(K runnerID, float time) {
-        this.runnerID = runnerID;
-        this.time = time;
-    }
-
-    public K getRunnerID() {
-        return runnerID;
-    }
-
-    public void setRunnerID(K runnerID) {
-        this.runnerID = runnerID;
+    public Run(float time, RunnerID id) {
+        Time = time;
+        ID = id;
     }
 
     public float getTime() {
-        return time;
+        return Time;
     }
 
     public void setTime(float time) {
-        this.time = time;
+        Time = time;
+    }
+
+    public RunnerID getID() {
+        return ID;
     }
 }
