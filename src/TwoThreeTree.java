@@ -2,17 +2,21 @@ public class TwoThreeTree<T> {
     private Node<T> root;
     private String comparisonType;
     private int size;
+    private Node<T> fastestRunner; // Reference to the node with the fastest runner
+
 
     public TwoThreeTree() {
         root = new Node<T>();
         comparisonType = "ID";
         size = 0;
+        this.fastestRunner = null;
     }
 
     public TwoThreeTree(String comparisonType) {
         this.root = new Node<T>();
         this.comparisonType = comparisonType;
         size = 0;
+        this.fastestRunner = null;
     }
 
     public Node<T> search23(Node<T> x, T k) {
@@ -172,12 +176,15 @@ public class TwoThreeTree<T> {
             setChildren23(w, x, z, null);
             setRoot(w);
         }
+
+        // After insertion, update the fastestRunner reference if necessary
+        if (fastestRunner == null || compareNodes((z != null ? z.getKey() : null), fastestRunner.getKey()) < 0) {
+            fastestRunner = z;
+        }
     }
 
     public Node<T> borrowOrMerge23(Node<T> y) {
         Node<T> z = y.getParent();
-
-        // TODO: check if this is the right way to do it
         if (y.equals(z.getLeft())) {
             Node<T> x = z.getMiddle();
             if (x.getRight() != null) {
@@ -245,7 +252,34 @@ public class TwoThreeTree<T> {
                 y = y.getParent();
             }
         }
+
+        // After deletion, update the fastestRunner reference if necessary
+        if (fastestRunner != null && fastestRunner.equals(x.getKey())) {
+            // Find the new fastest runner in the tree
+            fastestRunner = findFastestRunner(root);
+        }
     }
+
+    private Node<T> findFastestRunner(Node<T> node) {
+        if (node == null || node.isLeaf()) {
+            return node;
+        }
+
+        Node<T> leftMin = findFastestRunner(node.getLeft());
+        Node<T> middleMin = findFastestRunner(node.getMiddle());
+        Node<T> rightMin = node.getRight() != null ? findFastestRunner(node.getRight()) : null;
+
+        Node<T> minNode = leftMin;
+        if (middleMin != null && compareNodes(middleMin.getKey(), minNode.getKey()) < 0) {
+            minNode = middleMin;
+        }
+        if (rightMin != null && compareNodes(rightMin.getKey(), minNode.getKey()) < 0) {
+            minNode = rightMin;
+        }
+
+        return minNode;
+    }
+
 
 
     public Node<T> getRoot() {
@@ -300,5 +334,13 @@ public class TwoThreeTree<T> {
 
     public void setSize(int size) {
         this.size = size;
+    }
+
+    public Node<T> getFastestRunner() {
+        return fastestRunner;
+    }
+
+    public void setFastestRunner(Node<T> fastestRunner) {
+        this.fastestRunner = fastestRunner;
     }
 }

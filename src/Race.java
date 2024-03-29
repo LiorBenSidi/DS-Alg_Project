@@ -50,7 +50,7 @@ public class Race {
 
         runner.getRuns().setSize(runner.getRuns().getSize() + 1);
 
-        //TODO: update MinTimeTree and AvgTimeTree
+        //TODO: check if the update MinTimeTree and AvgTimeTree is valid
     }
 
     public void removeRunFromRunner(RunnerID id, float time)
@@ -66,17 +66,19 @@ public class Race {
 
         runner.getRuns().setSize(runner.getRuns().getSize() - 1);
 
-        //TODO: update MinTimeTree and AvgTimeTree
+        //TODO: check if the update MinTimeTree and AvgTimeTree is valid
     }
 
     public RunnerID getFastestRunnerAvg()
     {
-        return AvgTimeTree.minimum23().getKey().getID();
+        // TODO: check if this method is in a complexity time O(1)
+        return AvgTimeTree.getFastestRunner().getKey().getID();
     }
 
     public RunnerID getFastestRunnerMin()
     {
-        return MinTimeTree.minimum23().getKey().getID();
+        // TODO: check if this method is in a complexity time O(1)
+        return MinTimeTree.getFastestRunner().getKey().getID();
     }
 
     public float getMinRun(RunnerID id)
