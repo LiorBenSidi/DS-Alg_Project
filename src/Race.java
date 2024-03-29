@@ -3,6 +3,11 @@ public class Race {
     private TwoThreeTree<Runner> MinTimeTree;
     private TwoThreeTree<Runner> AvgTimeTree;
 
+    public Race()
+    {
+        init();
+    }
+
     public void init()
     {
         IDTree = new TwoThreeTree<Runner>("ID");
