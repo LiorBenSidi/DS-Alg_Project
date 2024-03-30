@@ -17,19 +17,42 @@ public class Race {
 
     public void addRunner(RunnerID id)
     {
+        boolean isEmpty = false;
+
+        //checks if the tree is empty
+        if (IDTree.getRoot().getKey() == null) {
+            isEmpty = true;
+        }
+
+        //check if the runner is already exists
+        if (!isEmpty && IDTree.search23(IDTree.getRoot(), new Runner(id)) != null) {
+            throw new IllegalArgumentException("Runner with ID " + id + " already exists.");
+        }
+
         Runner runner = new Runner(id);
-        runner.setMinTime(0); // Initializing with 0 to signify no runs yet
-        runner.setAvgTime(0); // Similarly, initializing the average time
         IDTree.insert23(new Node<>(runner));
         IDTree.setSize(IDTree.getSize() + 1);
         MinTimeTree.insert23(new Node<>(runner));
         MinTimeTree.setSize(MinTimeTree.getSize() + 1);
         AvgTimeTree.insert23(new Node<>(runner));
         AvgTimeTree.setSize(AvgTimeTree.getSize() + 1);
+        if (!isEmpty) {
+            IDTree.getRoot().setLeaf(false);
+            MinTimeTree.getRoot().setLeaf(false);
+            AvgTimeTree.getRoot().setLeaf(false);
+        }
     }
 
     public void removeRunner(RunnerID id)
     {
+        //checks if the tree is empty
+        if (IDTree.getRoot().getKey() == null) {
+            return;
+        }
+        //check if the runner exists
+        if (IDTree.search23(IDTree.getRoot(), new Runner(id)) == null) {
+            throw new IllegalArgumentException("Runner with ID " + id + " not found.");
+        }
         IDTree.delete23(IDTree.search23(IDTree.getRoot(), new Runner(id)));
         IDTree.setSize(IDTree.getSize() - 1);
         MinTimeTree.delete23(MinTimeTree.search23(MinTimeTree.getRoot(), new Runner(id)));

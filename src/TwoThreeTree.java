@@ -20,7 +20,7 @@ public class TwoThreeTree<T> {
     }
 
     public Node<T> search23(Node<T> x, T k) {
-        if (x.isLeaf()) {
+        if (x.isLeaf() && x.getKey() != null) {
             if (compareNodes(k, x.getKey()) == 0) {
                 return x;
             } else {
@@ -31,8 +31,10 @@ public class TwoThreeTree<T> {
             return search23(x.getLeft(), k);
         } else if (compareNodes(k, x.getMiddle().getKey()) <= 0) {
             return search23(x.getMiddle(), k);
-        } else {
+        } else if (x.getRight() != null){
             return search23(x.getRight(), k);
+        } else {
+            return null;
         }
     }
 
@@ -105,6 +107,72 @@ public class TwoThreeTree<T> {
         updateKey23(x);
     }
 
+    private void replaceChildInParent(Node<T> parent, Node<T> oldChild, Node<T> newChild) {
+        if (parent.getLeft() == oldChild) {
+            parent.setLeft(newChild);
+        } else if (parent.getMiddle() == oldChild) {
+            parent.setMiddle(newChild);
+        } else if (parent.getRight() == oldChild) {
+            parent.setRight(newChild);
+        }
+        newChild.setParent(parent);
+    }
+
+    //version 3
+    public Node<T> insertAndSplit23(Node<T> x, Node<T> z) {
+        Node<T> l = x.getLeft();
+        Node<T> m = x.getMiddle();
+        Node<T> r = x.getRight();
+
+        // Check if a split is needed
+        if (r == null) {
+            // No split needed, just insert
+            if (compareNodes(z.getKey(), l.getKey()) < 0) {
+                setChildren23(x, z, l, m);
+            } else if (compareNodes(z.getKey(), m.getKey()) < 0) {
+                setChildren23(x, l, z, m);
+            } else {
+                setChildren23(x, l, m, z);
+            }
+            return null;
+        } else {
+            // Split needed
+            Node<T> newInternalNode = new Node<T>();
+            Node<T> newLeftNode = new Node<T>();
+            Node<T> newRightNode = new Node<T>();
+
+            // Determine the order of the nodes and set their keys
+            if (compareNodes(z.getKey(), l.getKey()) < 0) {
+                newLeftNode.setKey(z.getKey());
+                newInternalNode.setKey(l.getKey());
+                newRightNode.setKey(m.getKey());
+            } else if (compareNodes(z.getKey(), m.getKey()) < 0) {
+                newLeftNode.setKey(l.getKey());
+                newInternalNode.setKey(z.getKey());
+                newRightNode.setKey(m.getKey());
+            } else {
+                newLeftNode.setKey(l.getKey());
+                newInternalNode.setKey(m.getKey());
+                newRightNode.setKey(z.getKey());
+            }
+
+            // Set the children for the new nodes
+            setChildren23(newInternalNode, newLeftNode, newRightNode, null);
+            newLeftNode.setParent(newInternalNode);
+            newRightNode.setParent(newInternalNode);
+
+            // If the split node has a parent, update its reference
+            if (x.getParent() != null) {
+                newInternalNode.setParent(x.getParent());
+                replaceChildInParent(x.getParent(), x, newInternalNode);
+            }
+
+            return newInternalNode;
+        }
+    }
+
+    //version 2
+    /*
     public Node<T> insertAndSplit23(Node<T> x, Node<T> z) {
         Node<T> l = x.getLeft();
         Node<T> m = x.getMiddle();
@@ -167,7 +235,8 @@ public class TwoThreeTree<T> {
             return newInternalNode; // Return the new internal node that should be inserted in the tree.
         }
     }
-
+    */
+    //version 1
     /*
         Node<T> l = x.getLeft();
         Node<T> m = x.getMiddle();
@@ -230,6 +299,21 @@ public class TwoThreeTree<T> {
         }
     }
 
+    //TODO: The insertAndSplit23 dont work properly
+    //while:
+    //2 is the root
+    //0 is left child
+    //1 is middle child
+    //2 is right child
+    //and we are enter a node with key = 3
+    //
+    //the tree should be looking like that:
+    //       New Root (key = 3)
+    //         /             \
+    //   (key = 2)           (key = 3)
+    //   /    \              /       \
+    //(key = 0) (key = 1) (key = 2)  (key = 3)
+
     public void insert23(Node<T> z) {
         // New node initially has size 1
         z.setSize(1);
@@ -243,23 +327,25 @@ public class TwoThreeTree<T> {
         }
 
         Node<T> y = root;
-        while (!y.isLeaf()) {
+        while (y != null && !y.isLeaf()) {
             y.setSize(y.getSize() + 1); // Update size as we go down
             if (compareNodes(z.getKey(), y.getLeft().getKey()) < 0) {
                 y = y.getLeft();
             } else if (y.getMiddle() != null && compareNodes(z.getKey(), y.getMiddle().getKey()) < 0) {
                 y = y.getMiddle();
             } else {
-                y = y.getRight();
+                // If the right child is null, it means we're at a 2-node and we should use the middle child
+                y = (y.getRight() != null) ? y.getRight() : y.getMiddle();
             }
         }
 
-        Node<T> x = y.getParent();
+        Node<T> x = y != null ? y.getParent() : null;
         if (x != null) {
             z = insertAndSplit23(x, z);
         } else {
             // y is the root and it's a leaf, so we're inserting the first value after root was created
             insertIntoLeaf(y, z);
+
             return;
         }
 
@@ -282,8 +368,8 @@ public class TwoThreeTree<T> {
             newRoot.setLeaf(false);
             root = newRoot;
         }
-
-        /*
+    }
+    /*
         z.setSize(1); // New node initially has size 1
         Node<T> y = root;
         while (y != null && !y.isLeaf()) {
@@ -335,8 +421,6 @@ public class TwoThreeTree<T> {
             y = y.getParent(); // Move up to update all ancestors
         }
          */
-    }
-
     public Node<T> borrowOrMerge23(Node<T> y) {
         Node<T> z = y.getParent();
         if (y.equals(z.getLeft())) {
@@ -499,7 +583,7 @@ public class TwoThreeTree<T> {
     private int compareRunnerID(Runner r1, Runner r2) {
         if (r1.getID().isSmaller(r2.getID())) {
             return -1;
-        } else if (!r1.getID().isSmaller(r2.getID())) {
+        } else if (r2.getID().isSmaller(r1.getID())) {
             return 1;
         } else {
             return 0;
