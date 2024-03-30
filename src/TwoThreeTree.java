@@ -105,8 +105,70 @@ public class TwoThreeTree<T> {
         updateKey23(x);
     }
 
-    public Node<T> insertAndSplit23(Node<T> x, Node<T> z)
-    {
+    public Node<T> insertAndSplit23(Node<T> x, Node<T> z) {
+        Node<T> l = x.getLeft();
+        Node<T> m = x.getMiddle();
+        Node<T> r = x.getRight();
+
+        // This is the node that will be the "middle" node after the split,
+        // which will be promoted to the parent level.
+        Node<T> newInternalNode = new Node<T>();
+
+        // This will hold the smaller keys
+        Node<T> newLeftNode = new Node<T>();
+
+        // This will hold the larger keys
+        Node<T> newRightNode = new Node<T>();
+
+        if (r == null) { // No split needed, just insert and return null.
+            if (compareNodes(z.getKey(), l.getKey()) < 0) {
+                setChildren23(x, z, l, m);
+            } else if (compareNodes(z.getKey(), m.getKey()) < 0) {
+                setChildren23(x, l, z, m);
+            } else {
+                setChildren23(x, l, m, z);
+            }
+            return null;
+        } else { // Split needed.
+            // Determine the order of keys and split the node.
+            if (compareNodes(z.getKey(), l.getKey()) < 0) {
+                newLeftNode.setKey(z.getKey());
+                newInternalNode.setKey(l.getKey());
+                newRightNode.setKey(m.getKey());
+                setChildren23(newLeftNode, z.getLeft(), z.getMiddle(), null);
+                setChildren23(newRightNode, m.getLeft(), m.getMiddle(), null);
+            } else if (compareNodes(z.getKey(), m.getKey()) < 0) {
+                newLeftNode.setKey(l.getKey());
+                newInternalNode.setKey(z.getKey());
+                newRightNode.setKey(m.getKey());
+                setChildren23(newLeftNode, l.getLeft(), l.getMiddle(), null);
+                setChildren23(newRightNode, z.getLeft(), z.getMiddle(), null);
+            } else { // z is the largest
+                newLeftNode.setKey(l.getKey());
+                newInternalNode.setKey(m.getKey());
+                newRightNode.setKey(z.getKey());
+                setChildren23(newLeftNode, l.getLeft(), l.getMiddle(), null);
+                setChildren23(newRightNode, m.getLeft(), z.getMiddle(), null);
+            }
+
+            // Now, set children of the new internal node.
+            setChildren23(newInternalNode, newLeftNode, newRightNode, null);
+
+            // Update the parent links for the new nodes.
+            newLeftNode.setParent(newInternalNode);
+            newRightNode.setParent(newInternalNode);
+
+            // If x had a parent, it means this split is happening internally
+            // and we must handle the middle key moving up the tree.
+            if (x.getParent() != null) {
+                newInternalNode.setParent(x.getParent());
+            }
+
+            return newInternalNode; // Return the new internal node that should be inserted in the tree.
+        }
+    }
+
+    /*
         Node<T> l = x.getLeft();
         Node<T> m = x.getMiddle();
         Node<T> r = x.getRight();
@@ -137,9 +199,92 @@ public class TwoThreeTree<T> {
         }
 
         return y;
+         */
+
+    public void insertIntoLeaf(Node<T> leaf, Node<T> z) {
+        // Insert z into the correct position relative to leaf
+        if (leaf.getKey() == null) {
+            // This is the first insert, and leaf is actually root
+            leaf.setKey(z.getKey());
+            leaf.setSize(1);  // Since this is the first key, size is 1
+            leaf.setLeaf(true); // A leaf node with one key
+        } else {
+            // There's an existing key, and we need to create a new node
+            Node<T> newLeaf = new Node<T>(); // Create a new leaf node for the new key
+            newLeaf.setKey(z.getKey());
+            newLeaf.setSize(1);
+            newLeaf.setLeaf(true);
+
+            // Compare keys to determine the order
+            if (compareNodes(newLeaf.getKey(), leaf.getKey()) < 0) {
+                // New key is smaller, make it the left child
+                Node<T> parent = new Node<T>(); // New root
+                setChildren23(parent, newLeaf, leaf, null); // Set newLeaf and leaf as children
+                setRoot(parent); // Set parent as new root
+            } else {
+                // New key is larger, make it the right child
+                Node<T> parent = new Node<T>(); // New root
+                setChildren23(parent, leaf, newLeaf, null); // Set leaf and newLeaf as children
+                setRoot(parent); // Set parent as new root
+            }
+        }
     }
 
     public void insert23(Node<T> z) {
+        // New node initially has size 1
+        z.setSize(1);
+
+        // If the tree is empty, make z the root and return
+        if (root == null || root.getKey() == null) {
+            root = z;
+            root.setSize(1);
+            root.setLeaf(true); // It's the only node, so it's a leaf
+            return;
+        }
+
+        Node<T> y = root;
+        while (!y.isLeaf()) {
+            y.setSize(y.getSize() + 1); // Update size as we go down
+            if (compareNodes(z.getKey(), y.getLeft().getKey()) < 0) {
+                y = y.getLeft();
+            } else if (y.getMiddle() != null && compareNodes(z.getKey(), y.getMiddle().getKey()) < 0) {
+                y = y.getMiddle();
+            } else {
+                y = y.getRight();
+            }
+        }
+
+        Node<T> x = y.getParent();
+        if (x != null) {
+            z = insertAndSplit23(x, z);
+        } else {
+            // y is the root and it's a leaf, so we're inserting the first value after root was created
+            insertIntoLeaf(y, z);
+            return;
+        }
+
+        // Propagate the split up the tree as necessary
+        while (x != null) {
+            if (z != null) {
+                z = insertAndSplit23(x, z);
+                x = (z != null) ? z.getParent() : x.getParent();
+            } else {
+                updateKey23(x);
+                x = x.getParent();
+            }
+        }
+
+        // If we have a new node after splitting the root, create a new root
+        if (z != null) {
+            Node<T> newRoot = new Node<T>();
+            setChildren23(newRoot, root, z, null);
+            setRoot(newRoot);
+            newRoot.setLeaf(false);
+            root = newRoot;
+        }
+
+        /*
+        z.setSize(1); // New node initially has size 1
         Node<T> y = root;
         while (y != null && !y.isLeaf()) {
             if (y.getLeft() != null && compareNodes(z.getKey(), y.getLeft().getKey()) < 0) {
@@ -175,12 +320,21 @@ public class TwoThreeTree<T> {
             Node<T> w = new Node<T>();
             setChildren23(w, x, z, null);
             setRoot(w);
+            root.setKey(z.getKey());
+            root.setLeaf(false);
         }
 
         // After insertion, update the fastestRunner reference if necessary
         if (fastestRunner == null || compareNodes((z != null ? z.getKey() : null), fastestRunner.getKey()) < 0) {
             fastestRunner = z;
         }
+
+        // After insertion, update sizes:
+        while (y != null) {
+            y.setSize(y.getSize() + 1); // Increment size of current node
+            y = y.getParent(); // Move up to update all ancestors
+        }
+         */
     }
 
     public Node<T> borrowOrMerge23(Node<T> y) {
@@ -223,6 +377,7 @@ public class TwoThreeTree<T> {
 
     public void delete23(Node<T> x) {
         Node<T> y = x.getParent();
+        Node<T> current = root;
         if (x.equals(y.getLeft())) {
             setChildren23(y, y.getMiddle(), y.getRight(), null);
         } else if (x.equals(y.getMiddle())) {
@@ -240,7 +395,7 @@ public class TwoThreeTree<T> {
 
         while (y != null) {
             if (y.getMiddle() == null) {
-                if (y != root) {
+                if (y != current) {
                     y = borrowOrMerge23(y);
                 } else {
                     setRoot(y.getLeft());
@@ -256,7 +411,13 @@ public class TwoThreeTree<T> {
         // After deletion, update the fastestRunner reference if necessary
         if (fastestRunner != null && fastestRunner.equals(x.getKey())) {
             // Find the new fastest runner in the tree
-            fastestRunner = findFastestRunner(root);
+            fastestRunner = findFastestRunner(current);
+        }
+
+        // After deletion, update sizes:
+        while (current != null) {
+            current.setSize(current.getSize() - 1); // Decrement size of current node
+            current = current.getParent(); // Move up to update all ancestors
         }
     }
 
@@ -279,6 +440,23 @@ public class TwoThreeTree<T> {
 
         return minNode;
     }
+
+    public int Rank(Node<T> x) {
+        int rank = 1;
+        Node<T> y = x.getParent();
+        while (y != null) {
+            if (x == y.getMiddle()) {
+                rank = rank + y.getLeft().getSize();
+
+            } else if (x == y.getRight()) {
+                rank = rank + y.getLeft().getSize() + y.getMiddle().getSize();
+            }
+            x = y;
+            y = y.getParent();
+        }
+        return rank;
+    }
+
 
 
 

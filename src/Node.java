@@ -7,29 +7,32 @@ public class Node<T> {
     private T key; //runner object or Run object
     private boolean isLeaf; //boolean to check if node is a leaf
     private int sentinel; //-1 to -infinity, 1 to infinity, 0 to else
+    private int size; //size of the node
 
     //Node Constructor:
     public Node() {
-        this.left = new Node<>(null, null, null, this, null, true, -1);
-        this.middle = new Node<>(null, null, null, this, null, true, 1);
+        this.left = new Node<>(null, null, null, this, null, true, -1, 0);
+        this.middle = new Node<>(null, null, null, this, null, true, 1, 0);
         this.right = null;
         this.parent = null;
         this.key = null;
         this.isLeaf = true;
         this.sentinel = 0;
+        this.size = 0;
     }
 
     public Node(T key) {
-        this.left = new Node<>(null, null, null, this, null, true, -1);
-        this.middle = new Node<>(null, null, null, this, null, true, 1);
+        this.left = new Node<>(null, null, null, this, null, true, -1, 0);
+        this.middle = new Node<>(null, null, null, this, null, true, 1, 0);
         this.right = null;
         this.parent = null;
         this.key = key;
         this.isLeaf = true;
         this.sentinel = 0;
+        this.size = 0;
     }
 
-    public Node(Node<T> left, Node<T> middle, Node<T> right, Node<T> parent, T key, Boolean isLeaf, int sentinel) {
+    public Node(Node<T> left, Node<T> middle, Node<T> right, Node<T> parent, T key, Boolean isLeaf, int sentinel, int size) {
         this.left = left;
         this.middle = middle;
         this.right = right;
@@ -37,6 +40,7 @@ public class Node<T> {
         this.key = key;
         this.isLeaf = isLeaf;
         this.sentinel = sentinel;
+        this.size = size;
     }
 
     public T getKey() {
@@ -93,5 +97,13 @@ public class Node<T> {
 
     public void setSentinel(int sentinel) {
         this.sentinel = sentinel;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
     }
 }

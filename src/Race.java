@@ -17,11 +17,14 @@ public class Race {
 
     public void addRunner(RunnerID id)
     {
-        IDTree.insert23(new Node<>(new Runner(id)));
+        Runner runner = new Runner(id);
+        runner.setMinTime(0); // Initializing with 0 to signify no runs yet
+        runner.setAvgTime(0); // Similarly, initializing the average time
+        IDTree.insert23(new Node<>(runner));
         IDTree.setSize(IDTree.getSize() + 1);
-        MinTimeTree.insert23(new Node<>(new Runner(id)));
+        MinTimeTree.insert23(new Node<>(runner));
         MinTimeTree.setSize(MinTimeTree.getSize() + 1);
-        AvgTimeTree.insert23(new Node<>(new Runner(id)));
+        AvgTimeTree.insert23(new Node<>(runner));
         AvgTimeTree.setSize(AvgTimeTree.getSize() + 1);
     }
 
@@ -36,9 +39,67 @@ public class Race {
 
     }
 
+    public void addRunToRunner(RunnerID id, float time) {
+        // Search for the runner in the IDTree
+        Node<Runner> searchResult = IDTree.search23(IDTree.getRoot(), new Runner(id));
+        if (searchResult == null || searchResult.getKey() == null) {
+            // Handle the case where the runner does not exist in the tree
+            System.out.println("Runner with ID " + id + " not found.");
+            return; // Exit the method as we can't add a run to a non-existent runner
+        }
+
+        // Get the runner from the search result
+        Runner runner = searchResult.getKey();
+
+        // Ensure the runner has a Runs TwoThreeTree initialized
+        if (runner.getRuns() == null) {
+            runner.setRuns(new TwoThreeTree<Run>());
+        }
+
+        // Insert the new run time into the Runs TwoThreeTree of the runner
+        runner.getRuns().insert23(new Node<>(new Run(time, id))); // Assuming Run has a constructor Run(float time, RunnerID id)
+
+        // Update min time if necessary
+        if (runner.getMinTime() == 0 || runner.getMinTime() > time) {
+            runner.setMinTime(time);
+        }
+
+        // Update average time
+        // The size is incremented within the insert23 method, so get the updated size after insertion
+        int numberOfRuns = runner.getRuns().getSize();
+        float totalTimes = runner.getAvgTime() * (numberOfRuns - 1) + time;
+        float newAvg = numberOfRuns > 0 ? totalTimes / numberOfRuns : 0;
+        runner.setAvgTime(newAvg);
+
+        // Update MinTimeTree and AvgTimeTree if they exist and are not null
+        if (MinTimeTree != null) {
+            // Assume delete23 and insert23 handle re-balancing and re-ordering the tree
+            MinTimeTree.delete23(searchResult);
+            MinTimeTree.insert23(new Node<>(runner));
+        }
+        if (AvgTimeTree != null) {
+            AvgTimeTree.delete23(searchResult);
+            AvgTimeTree.insert23(new Node<>(runner));
+        }
+    }
+
+
+    /*
     public void addRunToRunner(RunnerID id, float time)
     {
-        Runner runner = IDTree.search23(IDTree.getRoot(), new Runner(id)).getKey();
+        Node<Runner> searchResult = IDTree.search23(IDTree.getRoot(), new Runner(id));
+        if (searchResult == null || searchResult.getKey() == null) {
+            // Handle the case where the runner does not exist in the tree
+            System.out.println("Runner with ID " + id + " not found.");
+            return;
+        }
+        Runner runner = searchResult.getKey();
+
+        if (runner.getRuns() == null) {
+            // Initialize Runs TwoThreeTree if it's null
+            runner.setRuns(new TwoThreeTree<>());
+        }
+
         runner.getRuns().insert23(new Node<>(new Run(time, id)));
 
         if (runner.getMinTime() == 0) {
@@ -57,6 +118,7 @@ public class Race {
 
         //TODO: check if the update MinTimeTree and AvgTimeTree is valid
     }
+     */
 
     public void removeRunFromRunner(RunnerID id, float time)
     {
@@ -77,30 +139,74 @@ public class Race {
     public RunnerID getFastestRunnerAvg()
     {
         // TODO: check if this method is in a complexity time O(1)
-        return AvgTimeTree.getFastestRunner().getKey().getID();
+        //return AvgTimeTree.getFastestRunner().getKey().getID();
+        //return MinTimeTree.getFastestRunner().getKey().getID();
+        if (AvgTimeTree.getFastestRunner() != null) {
+            return AvgTimeTree.getFastestRunner().getKey().getID();
+        } else {
+            System.out.println("No runners have been added yet.");
+            return null;
+        }
     }
 
     public RunnerID getFastestRunnerMin()
     {
         // TODO: check if this method is in a complexity time O(1)
-        return MinTimeTree.getFastestRunner().getKey().getID();
+        //return MinTimeTree.getFastestRunner().getKey().getID();
+        if (MinTimeTree.getFastestRunner() != null) {
+            return MinTimeTree.getFastestRunner().getKey().getID();
+        } else {
+            System.out.println("No runners have been added yet.");
+            return null;
+        }
     }
 
     public float getMinRun(RunnerID id)
     {
-        return IDTree.search23(IDTree.getRoot(), new Runner(id)).getKey().getMinTime();
+        //return IDTree.search23(IDTree.getRoot(), new Runner(id)).getKey().getMinTime();
+        Node<Runner> runnerNode = IDTree.search23(IDTree.getRoot(), new Runner(id));
+        if (runnerNode != null && runnerNode.getKey() != null) {
+            return runnerNode.getKey().getMinTime();
+        } else {
+            // Handle the case when the runner is not found
+            System.out.println("Runner with ID " + id + " not found.");
+            return -1; // or throw an exception or return some default value
+        }
     }
+
     public float getAvgRun(RunnerID id){
-        return IDTree.search23(IDTree.getRoot(), new Runner(id)).getKey().getAvgTime();
+        //return IDTree.search23(IDTree.getRoot(), new Runner(id)).getKey().getAvgTime();
+        Node<Runner> runnerNode = IDTree.search23(IDTree.getRoot(), new Runner(id));
+        if (runnerNode != null && runnerNode.getKey() != null) {
+            return runnerNode.getKey().getAvgTime();
+        } else {
+            // Handle the case when the runner is not found
+            System.out.println("Runner with ID " + id + " not found.");
+            return -1; // or throw an exception or return some default value
+        }
     }
 
     public int getRankAvg(RunnerID id)
     {
-        throw new java.lang.UnsupportedOperationException("not implemented");
+        // Implement a search method to find the node with the given id
+        Node<Runner> node = AvgTimeTree.search23(AvgTimeTree.getRoot(), new Runner(id));
+        if (node != null) {
+            return AvgTimeTree.Rank(node);
+        } else {
+            // Handle the case where the runner is not found
+            return -1; // Or another appropriate value or exception
+        }
     }
 
     public int getRankMin(RunnerID id)
     {
-        throw new java.lang.UnsupportedOperationException("not implemented");
+        // Implement a search method to find the node with the given id
+        Node<Runner> node = MinTimeTree.search23(MinTimeTree.getRoot(), new Runner(id));
+        if (node != null) {
+            return MinTimeTree.Rank(node);
+        } else {
+            // Handle the case where the runner is not found
+            return -1; // Or another appropriate value or exception
+        }
     }
 }
