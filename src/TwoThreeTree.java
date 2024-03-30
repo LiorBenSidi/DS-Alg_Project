@@ -310,7 +310,7 @@ public class TwoThreeTree<T> {
     //the tree should be looking like that:
     //       New Root (key = 3)
     //         /             \
-    //   (key = 2)           (key = 3)
+    //   (key = 1)           (key = 3)
     //   /    \              /       \
     //(key = 0) (key = 1) (key = 2)  (key = 3)
 
