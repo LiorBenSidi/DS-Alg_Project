@@ -118,7 +118,53 @@ public class TwoThreeTree<T> {
         newChild.setParent(parent);
     }
 
+    //version 3**
+    public Node<T> insertAndSplit23(Node<T> x, Node<T> z) {
+        Node<T> l = x.getLeft();
+        Node<T> m = x.getMiddle();
+        Node<T> r = x.getRight();
 
+        // Check if a split is needed
+        if (r == null) {
+            // No split needed, just insert
+            if (compareNodes(z.getKey(), l.getKey()) < 0) {
+                setChildren23(x, z, l, m);
+            } else if (compareNodes(z.getKey(), m.getKey()) < 0) {
+                setChildren23(x, l, z, m);
+            } else {
+                setChildren23(x, l, m, z);
+            }
+            x.setSize(x.getSize() + 1); // Update size of x
+            return null;
+        }
+
+        // Split needed
+        Node<T> newInternalNode = new Node<T>();
+        newInternalNode.setSize(x.getSize() + 1); // Size of new internal node
+
+        // Determine the order of the nodes and set their keys
+        if (compareNodes(z.getKey(), l.getKey()) < 0) {
+            setChildren23(x, z, l, null);
+            setChildren23(newInternalNode, m, r, null);
+            //x.setSize(x.getLeft().getSize() + x.getMiddle().getSize()); // Update size of x
+        } else if (compareNodes(z.getKey(), m.getKey()) < 0) {
+            setChildren23(x, l, z, null);
+            setChildren23(newInternalNode, m, r, null);
+            //x.setSize(x.getLeft().getSize() + x.getMiddle().getSize()); // Update size of x
+        } else if (compareNodes(z.getKey(), r.getKey()) < 0) {
+            setChildren23(x, l, m, null);
+            setChildren23(newInternalNode, z, r, null);
+        } else {
+            setChildren23(newInternalNode, r, z, null);
+        }
+
+        // Update size of new internal node and its children
+        newInternalNode.getLeft().setSize(m.getSize());
+        newInternalNode.getMiddle().setSize(r.getSize());
+        newInternalNode.setSize(newInternalNode.getLeft().getSize() + newInternalNode.getMiddle().getSize());
+
+        return newInternalNode;
+    }
 
     //version 3*
     /*
@@ -325,8 +371,7 @@ public class TwoThreeTree<T> {
     //(key = 0) (key = 1) (key = 2)  (key = 3)
 
     public void insert23(Node<T> z) {
-        // New node initially has size 1
-        z.setSize(1);
+        z.setSize(1); // Set the size of the new node to 1
 
         // If the tree is empty, make z the root and return
         if (root == null || root.getKey() == null) {
@@ -365,7 +410,7 @@ public class TwoThreeTree<T> {
                 x = (z != null) ? z.getParent() : x.getParent();
             } else {
                 updateKey23(x);
-                x.setSize(x.getLeft().getSize() + (x.getMiddle() != null ? x.getMiddle().getSize() : 0) + (x.getRight() != null ? x.getRight().getSize() : 0));
+                //x.setSize(x.getLeft().getSize() + (x.getMiddle() != null ? x.getMiddle().getSize() : 0) + (x.getRight() != null ? x.getRight().getSize() : 0));
                 x = x.getParent();
             }
         }
@@ -533,6 +578,53 @@ public class TwoThreeTree<T> {
 
     public void delete23(Node<T> x) {
         Node<T> y = x.getParent();
+        if (x.equals(y.getLeft())) {
+            setChildren23(y, y.getMiddle(), y.getRight(), null);
+        } else if (x.equals(y.getMiddle())) {
+            setChildren23(y, y.getLeft(), y.getRight(), null);
+        } else {
+            setChildren23(y, y.getLeft(), y.getMiddle(), null);
+        }
+
+        // Prepare node x for garbage collection
+        x.setLeft(null);
+        x.setMiddle(null);
+        x.setRight(null);
+        x.setParent(null);
+        x.setKey(null);
+
+        // Update the size of the ancestors of y
+        Node<T> current = y;
+        while (current != null) {
+            current.setSize(current.getSize() - 1);
+            current = current.getParent();
+        }
+
+        while (y != null) {
+            if (y.getMiddle() == null) {
+                if (y != root) {
+                    y = borrowOrMerge23(y);
+                } else {
+                    setRoot(y.getLeft());
+                    y.setLeft(null); // Prepare y for garbage collection if it's the old root
+                    return;
+                }
+            } else {
+                updateKey23(y);
+                y = y.getParent();
+            }
+        }
+
+        // After deletion, update the fastestRunner reference if necessary
+        if (fastestRunner != null && fastestRunner.equals(x.getKey())) {
+            // Find the new fastest runner in the tree
+            fastestRunner = findFastestRunner(root);
+        }
+    }
+
+    /*
+    public void delete23(Node<T> x) {
+        Node<T> y = x.getParent();
         Node<T> current = root;
         if (x.equals(y.getLeft())) {
             setChildren23(y, y.getMiddle(), y.getRight(), null);
@@ -576,6 +668,7 @@ public class TwoThreeTree<T> {
             current = current.getParent(); // Move up to update all ancestors
         }
     }
+     */
 
     private Node<T> findFastestRunner(Node<T> node) {
         if (node == null || node.isLeaf()) {
@@ -643,11 +736,13 @@ public class TwoThreeTree<T> {
                     return Float.compare(((Runner) r1).getAvgTime(), ((Runner) r2).getAvgTime());
                 default:
                     throw new IllegalArgumentException("Invalid comparison type: " + comparisonType);
-        }
-        } else {
-            if (comparisonType.equals("Time")) {
-                return Float.compare((Float) r1, (Float) r2);
             }
+        } else if (r1 instanceof Run && r2 instanceof Run){
+            if (comparisonType.equals("Time")) {
+                return Float.compare(((Run) r1).getTime(),((Run) r2).getTime());
+            }
+            throw new IllegalArgumentException("Invalid comparison type: " + comparisonType);
+        } else {
             throw new IllegalArgumentException("Invalid comparison type: " + comparisonType);
         }
     }

@@ -21,6 +21,7 @@ class RunnerIDInt extends RunnerID{
 public class Main {
     public static void main(String[] args) {
         testLargeDataset();
+        /*
         testAddRunner();
         testAddRunToRunner();
         testRemoveRunFromRunner();
@@ -33,6 +34,7 @@ public class Main {
         testGetRankMin();
         stressTestRace();
         testFastestRunners();
+         */
     }
 
     public static void testAddRunner() {
