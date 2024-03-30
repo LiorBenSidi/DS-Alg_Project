@@ -68,8 +68,7 @@ public class Race {
         Node<Runner> searchResult = IDTree.search23(IDTree.getRoot(), new Runner(id));
         if (searchResult == null || searchResult.getKey() == null) {
             // Handle the case where the runner does not exist in the tree
-            System.out.println("Runner with ID " + id + " not found.");
-            return; // Exit the method as we can't add a run to a non-existent runner
+            throw new IllegalArgumentException("Runner with ID " + id + " not found.");
         }
 
         // Get the runner from the search result

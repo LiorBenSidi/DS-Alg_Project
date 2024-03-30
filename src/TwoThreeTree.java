@@ -355,7 +355,10 @@ public class TwoThreeTree<T> {
         }
     }
 
-    //TODO: The insertAndSplit23 dont work properly
+    //TODO: The insertAndSplit23 dont work properly(the leafs are sorted, but not in the same level)
+    //TODO: The size update is wrong(Also, in delete!!!)
+
+    //example to split the root:
     //while:
     //2 is the root
     //0 is left child
@@ -398,7 +401,7 @@ public class TwoThreeTree<T> {
         if (x != null) {
             z = insertAndSplit23(x, z);
         } else {
-            // y is the root and it's a leaf, so we're inserting the first value after root was created
+            // y is the root, and it's a leaf, so we're inserting the first value after root was created
             insertIntoLeaf(y, z);
             return;
         }
@@ -425,7 +428,6 @@ public class TwoThreeTree<T> {
             root = newRoot;
         }
     }
-
 
     //version 2(correct but the size update is wrong)
     /*
@@ -538,6 +540,7 @@ public class TwoThreeTree<T> {
             y = y.getParent(); // Move up to update all ancestors
         }
          */
+
     public Node<T> borrowOrMerge23(Node<T> y) {
         Node<T> z = y.getParent();
         if (y.equals(z.getLeft())) {
