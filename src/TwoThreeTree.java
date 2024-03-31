@@ -13,7 +13,7 @@ public class TwoThreeTree<T> {
     }
 
     public TwoThreeTree(String comparisonType) {
-        this.root = new Node<T>();
+        this();
         this.comparisonType = comparisonType;
         size = 0;
         this.fastestRunner = null;
@@ -118,7 +118,57 @@ public class TwoThreeTree<T> {
         newChild.setParent(parent);
     }
 
+
+    public Node<T> insertAndSplit23(Node<T> x, Node<T> z) {
+        Node<T> l = x.getLeft();
+        Node<T> m = x.getMiddle();
+        Node<T> r = x.getRight();
+
+        if (r == null) {
+            // No split needed, just insert
+            if (compareNodes(z.getKey(), l.getKey()) < 0) {
+                setChildren23(x, z, l, m);
+            } else if (compareNodes(z.getKey(), m.getKey()) < 0) {
+                setChildren23(x, l, z, m);
+            } else {
+                setChildren23(x, l, m, z);
+            }
+            x.setSize(x.getLeft().getSize() + x.getMiddle().getSize() + (x.getRight() != null ? x.getRight().getSize() : 0));
+            return null;
+        }
+
+        // Split needed
+        Node<T> newInternalNode = new Node<T>();
+        Node<T> newLeftNode = new Node<T>();
+        Node<T> newRightNode = new Node<T>();
+
+        if (compareNodes(z.getKey(), l.getKey()) < 0) {
+            newLeftNode = z;
+            newRightNode = new Node<T>(m, r, null, newInternalNode, r.getKey(), false, m.getSize() + r.getSize());
+        } else if (compareNodes(z.getKey(), m.getKey()) < 0) {
+            newLeftNode = l;
+            newRightNode = new Node<T>(z, r, null, newInternalNode, r.getKey(), false, z.getSize() + r.getSize());
+        } else {
+            newLeftNode = l;
+            newRightNode = new Node<T>(m, z, null, newInternalNode, z.getKey(), false, m.getSize() + z.getSize());
+        }
+
+        setChildren23(newInternalNode, newLeftNode, newRightNode, null);
+        newInternalNode.setSize(newLeftNode.getSize() + newRightNode.getSize());
+
+        if (x.getParent() != null) {
+            replaceChildInParent(x.getParent(), x, newInternalNode);
+        } else {
+            setRoot(newInternalNode);
+        }
+
+        return newInternalNode;
+    }
+
+
+
     //version 3**
+    /*
     public Node<T> insertAndSplit23(Node<T> x, Node<T> z) {
         Node<T> l = x.getLeft();
         Node<T> m = x.getMiddle();
@@ -134,7 +184,7 @@ public class TwoThreeTree<T> {
             } else {
                 setChildren23(x, l, m, z);
             }
-            x.setSize(x.getSize() + 1); // Update size of x
+            x.setSize(x.getLeft().getSize() + x.getMiddle().getSize() + (x.getRight() != null ? x.getRight().getSize() : 0));
             return null;
         }
 
@@ -165,6 +215,7 @@ public class TwoThreeTree<T> {
 
         return newInternalNode;
     }
+     */
 
     //version 3*
     /*
@@ -326,6 +377,50 @@ public class TwoThreeTree<T> {
         return y;
          */
 
+
+
+    //insertIntoLeaf
+    //version 2
+
+    public void insertIntoLeaf(Node<T> leaf, Node<T> z) {
+        // Insert z into the correct position relative to leaf
+        if (leaf.getKey() == null) {
+            // This is the first insert, and leaf is actually root
+            leaf.setKey(z.getKey());
+            leaf.setSize(1);  // Since this is the first key, size is 1
+            leaf.setLeaf(true); // A leaf node with one key
+        } else {
+            // There's an existing key, and we need to create a new node
+            Node<T> newLeaf = new Node<T>(); // Create a new leaf node for the new key
+            newLeaf.setKey(z.getKey());
+            newLeaf.setSize(1);
+            newLeaf.setLeaf(true);
+
+            Node<T> parent = new Node<T>(); // New root
+            // Compare keys to determine the order
+            if (compareNodes(newLeaf.getKey(), leaf.getKey()) < 0) {
+                // New key is smaller, make it the left child
+                parent = new Node<T>(); // New root
+                setChildren23(parent, newLeaf, leaf, null); // Set newLeaf and leaf as children
+                setRoot(parent); // Set parent as new root
+            } else {
+                // New key is larger, make it the right child
+                parent = new Node<T>(); // New root
+                setChildren23(parent, leaf, newLeaf, null); // Set leaf and newLeaf as children
+                setRoot(parent); // Set parent as new root
+            }
+
+            // Update the size of the ancestors
+            Node<T> current = parent;
+            while (current != null) {
+                current.setSize(current.getLeft().getSize() + (current.getMiddle() != null ? current.getMiddle().getSize() : 0));
+                current = current.getParent();
+            }
+        }
+    }
+
+    //version 1
+    /*
     public void insertIntoLeaf(Node<T> leaf, Node<T> z) {
         // Insert z into the correct position relative to leaf
         if (leaf.getKey() == null) {
@@ -354,6 +449,7 @@ public class TwoThreeTree<T> {
             }
         }
     }
+    */
 
     //TODO: The insertAndSplit23 dont work properly(the leafs are sorted, but not in the same level)
     //TODO: The size update is wrong(Also, in delete!!!)
@@ -373,6 +469,7 @@ public class TwoThreeTree<T> {
     //   /    \              /       \
     //(key = 0) (key = 1) (key = 2)  (key = 3)
 
+    //version 3*
     public void insert23(Node<T> z) {
         z.setSize(1); // Set the size of the new node to 1
 
