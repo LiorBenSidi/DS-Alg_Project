@@ -1,33 +1,38 @@
 public class Node<T> {
-    //Node Attributes:
-    private Node<T> left; //pointer to left child
-    private Node<T> middle; //pointer to middle child
-    private Node<T> right; //pointer to right child
-    private Node<T> parent; //pointer to parent
-    private T key; //runner object or Run object
-    private boolean isLeaf; //boolean to check if node is a leaf
-    private int sentinel; //-1 to -infinity, 1 to infinity, 0 to else
-    private int size; //size of the node
+    public static final Node<?> SENTINEL = new Node<>(null, true);
+
+    private T key;
+    private Node<T> left, middle, right, parent;
+    private boolean isLeaf;
+    private int size;
 
     //Node Constructor:
     public Node() {
-        this.left = new Node<>(null, null, null, this, null, true, 0);
-        this.middle = new Node<>(null, null, null, this, null, true, 0);
-        this.right = null;
-        this.parent = null;
+        this.left = (Node<T>) SENTINEL;
+        this.middle = (Node<T>) SENTINEL;
+        this.right = (Node<T>) SENTINEL;
+        this.parent = (Node<T>) SENTINEL;
         this.key = null;
         this.isLeaf = true;
         this.size = 0;
     }
 
-    public Node(T key) {
-        this.left = new Node<>(null, null, null, this, null, true, 0);
-        this.middle = new Node<>(null, null, null, this, null, true, 0);
-        this.right = null;
-        this.parent = null;
+    private Node(T key, boolean isSentinel) {
         this.key = key;
-        this.isLeaf = true;
-        this.size = 0;
+        this.isLeaf = isSentinel; // Only the sentinel node should have this as true
+        if (isSentinel) {
+            this.left = this.middle = this.right = this.parent = null;
+            this.size = 0;
+        } else {
+            this.left = this.middle = this.right = (Node<T>) SENTINEL;
+            this.parent = (Node<T>) SENTINEL;
+            this.size = 1; // Adjust based on your size logic
+        }
+    }
+
+    // Public constructor for normal nodes
+    public Node(T key) {
+        this(key, false);
     }
 
     public Node(Node<T> left, Node<T> middle, Node<T> right, Node<T> parent, T key, Boolean isLeaf, int size) {
@@ -90,12 +95,8 @@ public class Node<T> {
     }
 
 
-    public int getSentinel() {
-        return sentinel;
-    }
-
-    public void setSentinel(int sentinel) {
-        this.sentinel = sentinel;
+    public boolean isSentinel() {
+        return this == SENTINEL;
     }
 
     public int getSize() {
