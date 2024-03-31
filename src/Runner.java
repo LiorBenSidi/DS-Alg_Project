@@ -7,8 +7,8 @@ public class Runner{
     public Runner(RunnerID id) {
         this.ID = id;
         this.Runs = new TwoThreeTree<Run>("Time");
-        this.MinTime = 0;
-        this.AvgTime = 0;
+        this.MinTime = Float.MAX_VALUE;
+        this.AvgTime = Float.MAX_VALUE;
     }
 
     public RunnerID getID() {

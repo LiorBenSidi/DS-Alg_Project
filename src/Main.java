@@ -41,9 +41,13 @@ public class Main {
         try {
             RunnerIDInt id1 = new RunnerIDInt(3);
             RunnerIDInt id2 = new RunnerIDInt(5);
+            RunnerIDInt id3 = new RunnerIDInt(7);
+            RunnerIDInt id4 = new RunnerIDInt(9);
             Race race = new Race();
             race.addRunner(id1);
             race.addRunner(id2);
+            race.addRunner(id3);
+            race.addRunner(id4);
             System.out.println("addRunner test passed.");
         } catch (Exception e) {
             System.out.println("addRunner test failed: " + e.getMessage());

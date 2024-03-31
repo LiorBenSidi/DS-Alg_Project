@@ -11,35 +11,32 @@ public class Node<T> {
 
     //Node Constructor:
     public Node() {
-        this.left = new Node<>(null, null, null, this, null, true, -1, 0);
-        this.middle = new Node<>(null, null, null, this, null, true, 1, 0);
+        this.left = new Node<>(null, null, null, this, null, true, 0);
+        this.middle = new Node<>(null, null, null, this, null, true, 0);
         this.right = null;
         this.parent = null;
         this.key = null;
         this.isLeaf = true;
-        this.sentinel = 0;
         this.size = 0;
     }
 
     public Node(T key) {
-        this.left = new Node<>(null, null, null, this, null, true, -1, 0);
-        this.middle = new Node<>(null, null, null, this, null, true, 1, 0);
+        this.left = new Node<>(null, null, null, this, null, true, 0);
+        this.middle = new Node<>(null, null, null, this, null, true, 0);
         this.right = null;
         this.parent = null;
         this.key = key;
         this.isLeaf = true;
-        this.sentinel = 0;
         this.size = 0;
     }
 
-    public Node(Node<T> left, Node<T> middle, Node<T> right, Node<T> parent, T key, Boolean isLeaf, int sentinel, int size) {
+    public Node(Node<T> left, Node<T> middle, Node<T> right, Node<T> parent, T key, Boolean isLeaf, int size) {
         this.left = left;
         this.middle = middle;
         this.right = right;
         this.parent = parent;
         this.key = key;
         this.isLeaf = isLeaf;
-        this.sentinel = sentinel;
         this.size = size;
     }
 
@@ -89,7 +86,9 @@ public class Node<T> {
 
     public void setLeaf(boolean leaf) {
         isLeaf = leaf;
+        size = 1;
     }
+
 
     public int getSentinel() {
         return sentinel;

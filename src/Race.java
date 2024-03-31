@@ -143,6 +143,7 @@ public class Race {
 
     public void removeRunFromRunner(RunnerID id, float time)
     {
+        //TODO: check if the runner exists AND the run exists
         Runner runner = IDTree.search23(IDTree.getRoot(), new Runner(id)).getKey();
         runner.getRuns().delete23(runner.getRuns().search23(runner.getRuns().getRoot(), new Run(time, id)));
         if (runner.getMinTime() == time) {
@@ -159,6 +160,7 @@ public class Race {
 
     public RunnerID getFastestRunnerAvg()
     {
+        // TODO: check if the tree is empty
         // TODO: check if this method is in a complexity time O(1)
         //return AvgTimeTree.getFastestRunner().getKey().getID();
         //return MinTimeTree.getFastestRunner().getKey().getID();
@@ -171,6 +173,7 @@ public class Race {
 
     public RunnerID getFastestRunnerMin()
     {
+        // TODO: check if the tree is empty
         // TODO: check if this method is in a complexity time O(1)
         //return MinTimeTree.getFastestRunner().getKey().getID();
         if (MinTimeTree.getFastestRunner() != null) {
