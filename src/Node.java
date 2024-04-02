@@ -1,6 +1,6 @@
 public class Node<T> {
-    public static final Node<?> SENTINEL = new Node<>(null, true);
-
+    public static final Node<?> MIN_SENTINEL = new Node<>(null, true);
+    public static final Node<?> MAX_SENTINEL = new Node<>(null, true);
     private T key;
     private Node<T> left, middle, right, parent;
     private boolean isLeaf;
@@ -8,24 +8,26 @@ public class Node<T> {
 
     //Node Constructor:
     public Node() {
-        this.left = (Node<T>) SENTINEL;
-        this.middle = (Node<T>) SENTINEL;
-        this.right = (Node<T>) SENTINEL;
-        this.parent = (Node<T>) SENTINEL;
+        this.left = (Node<T>) MIN_SENTINEL;
+        this.middle = (Node<T>) MAX_SENTINEL;
+        this.right = null;
+        this.parent = null;
         this.key = null;
-        this.isLeaf = true;
+        this.isLeaf = false;
         this.size = 0;
     }
 
     private Node(T key, boolean isSentinel) {
         this.key = key;
         this.isLeaf = isSentinel; // Only the sentinel node should have this as true
-        if (isSentinel) {
+        if (isSentinel && key == null) {
             this.left = this.middle = this.right = this.parent = null;
             this.size = 0;
         } else {
-            this.left = this.middle = this.right = (Node<T>) SENTINEL;
-            this.parent = (Node<T>) SENTINEL;
+            this.left = (Node<T>) MIN_SENTINEL;
+            this.middle = (Node<T>) MAX_SENTINEL;
+            this.right = null;
+            this.parent = null;
             this.size = 1; // Adjust based on your size logic
         }
     }
@@ -94,9 +96,16 @@ public class Node<T> {
         size = 1;
     }
 
+    public boolean isMaxNode() {
+        return this == MAX_SENTINEL;
+    }
+
+    public boolean isMinNode() {
+        return this == MIN_SENTINEL;
+    }
 
     public boolean isSentinel() {
-        return this == SENTINEL;
+        return (this == MIN_SENTINEL) || (this == MAX_SENTINEL);
     }
 
     public int getSize() {

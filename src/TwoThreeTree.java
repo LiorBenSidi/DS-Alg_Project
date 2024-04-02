@@ -5,7 +5,7 @@ public class TwoThreeTree<T> {
     private Node<T> fastestRunner; // Reference to the node with the fastest runner(Run) in the tree
 
     public TwoThreeTree() {
-        this.root = (Node<T>) Node.SENTINEL;
+        this.root = new Node<T>();
         this.comparisonType = "ID";
         this.size = 0; // Tree is initially empty
         this.fastestRunner = null;
@@ -28,9 +28,9 @@ public class TwoThreeTree<T> {
                 return null; // Key not found
             }
         } else {
-            if (compareNodeWithKey(node.getLeft(), key) > 0) {
+            if (compareNodeWithKey(node.getLeft(), key) >= 0) {
                 return search23(node.getLeft(), key);
-            } else if (node.getMiddle().isSentinel() || compareNodeWithKey(node.getMiddle(), key) > 0) {
+            } else if (compareNodeWithKey(node.getMiddle(), key) >= 0) {
                 return search23(node.getMiddle(), key);
             } else {
                 return search23(node.getRight(), key);
@@ -64,10 +64,11 @@ public class TwoThreeTree<T> {
     //version 2
     public Node<T> minimum23() {
         Node<T> x = this.root;
-        while (!x.isLeaf() && !x.getLeft().isSentinel()) {
+        while (!x.isLeaf() && !x.getLeft().isMinNode()) {
             x = x.getLeft(); // Continue to the leftmost child
         }
-        if (!x.isSentinel()) {
+        x = x.getParent().getMiddle(); // Get the middle child of the parent
+        if (!x.isMaxNode()) {
             return x;
         } else {
             throw new IllegalArgumentException("Tree is empty.");
@@ -1300,7 +1301,10 @@ public class TwoThreeTree<T> {
     //version 2
     public int compareNodeWithKey(Node<T> node, T key) {
         // Check for sentinel nodes first.
-        if (node.isSentinel()) {
+        if (node.isMinNode()) {
+            // Sentinel is considered greater than any real key.
+            return -1;
+        } else if (node.isMaxNode()) {
             // Sentinel is considered greater than any real key.
             return 1;
         }
@@ -1314,12 +1318,10 @@ public class TwoThreeTree<T> {
     }
     public int compareNodeWithNode(Node<T> n1, Node<T> n2) {
         // Check for sentinel nodes first.
-        if (n1.isSentinel() && !n2.isSentinel()) {
-            // Sentinel is considered greater than any real key.
-            return 1;
-        } else if (!n1.isSentinel() && n2.isSentinel()) {
-            // Any real key is considered less than a sentinel.
+        if (n1.isMinNode() && n2.isMaxNode()) {
             return -1;
+        } else if (n1.isMaxNode() && n2.isMinNode()) {
+            return 1;
         } else if (n1.isSentinel() && n2.isSentinel()) {
             // Two sentinels are considered equal.
             return 0;
