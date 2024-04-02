@@ -6,10 +6,11 @@ public class Node<T> {
     private boolean isLeaf;
     private int size;
 
+    //TODO:
     //Node Constructor:
     public Node() {
-        this.left = (Node<T>) MIN_SENTINEL;
-        this.middle = (Node<T>) MAX_SENTINEL;
+        this.left = null;
+        this.middle = null;
         this.right = null;
         this.parent = null;
         this.key = null;
@@ -24,7 +25,7 @@ public class Node<T> {
             this.left = this.middle = this.right = this.parent = null;
             this.size = 0;
         } else {
-            this.left = (Node<T>) MIN_SENTINEL;
+            this.left = (Node<T>) MAX_SENTINEL;
             this.middle = (Node<T>) MAX_SENTINEL;
             this.right = null;
             this.parent = null;

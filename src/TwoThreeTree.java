@@ -5,7 +5,7 @@ public class TwoThreeTree<T> {
     private Node<T> fastestRunner; // Reference to the node with the fastest runner(Run) in the tree
 
     public TwoThreeTree() {
-        this.root = new Node<T>();
+        this.root = new Node<T>(null);
         this.comparisonType = "ID";
         this.size = 0; // Tree is initially empty
         this.fastestRunner = null;
@@ -163,17 +163,14 @@ public class TwoThreeTree<T> {
         x.setKey(x.getLeft().getKey());
 
         // Update x.key to the key of x.middle if x.middle is not a sentinel.
-        if (!x.getMiddle().isSentinel()) {
+        if (x.getMiddle() != null) {
             x.setKey(x.getMiddle().getKey());
         }
 
         // Update x.key to the key of x.right if x.right is not a sentinel.
-        if (!x.getRight().isSentinel()) {
+        if (x.getRight() != null) {
             x.setKey(x.getRight().getKey());
         }
-
-        // Update the size attribute if necessary
-        x.setSize(calculateSubtreeSize(x));
     }
 
     //version 1
@@ -195,6 +192,7 @@ public class TwoThreeTree<T> {
     }
      */
     //used in updateKey
+    //TODO: runs at O(n) time complexity, can be optimized to O(1)
     private int calculateSubtreeSize(Node<T> node) {
         if (node.isSentinel()) {
             // Sentinel nodes do not count towards the size of the tree.
@@ -213,18 +211,18 @@ public class TwoThreeTree<T> {
     //version 4
     public void setChildren23(Node<T> x, Node<T> left, Node<T> middle, Node<T> right) {
         // Set the children of x to either a valid node or the sentinel node.
-        x.setLeft(left != null ? left : (Node<T>) Node.SENTINEL);
-        x.setMiddle(middle != null ? middle : (Node<T>) Node.SENTINEL);
-        x.setRight(right != null ? right : (Node<T>) Node.SENTINEL);
+        x.setLeft(left);
+        x.setMiddle(middle);
+        x.setRight(right);
+
+        left.setParent(x);
 
         // Update the parent pointers of the children to x
-        if (left != Node.SENTINEL) {
-            left.setParent(x);
-        }
-        if (middle != Node.SENTINEL) {
+
+        if (middle != null) {
             middle.setParent(x);
         }
-        if (right != Node.SENTINEL) {
+        if (right != null) {
             right.setParent(x);
         }
 
@@ -306,11 +304,8 @@ public class TwoThreeTree<T> {
         Node<T> m = x.getMiddle();
         Node<T> r = x.getRight();
 
-        // Create a new node `y` that might be the result of a split.
-        Node<T> y = new Node<T>();
-
         // Case 1: x has only 2 children (x.right is sentinel).
-        if (r.isSentinel()) {
+        if (r == null) {
             if (compareNodeWithNode(z, l) < 0) {
                 setChildren23(x, z, l, m);
             } else if (compareNodeWithNode(z, m) < 0) {
@@ -322,6 +317,9 @@ public class TwoThreeTree<T> {
             updateSize(x);
             return null;
         }
+
+        // Create a new node `y` that might be the result of a split.
+        Node<T> y = new Node<T>();
 
         // Case 2: x has 3 children and needs to be split.
         if (compareNodeWithNode(z, l) < 0) {
@@ -338,9 +336,7 @@ public class TwoThreeTree<T> {
             setChildren23(y, r, z, null);
         }
 
-        // Update keys and sizes after the split.
-        updateKey23(x);
-        updateKey23(y);
+        // Update sizes after the split.
         updateSize(x);
         updateSize(y);
 
@@ -352,9 +348,9 @@ public class TwoThreeTree<T> {
         if (node.isSentinel()) {
             return;
         }
-        int leftSize = node.getLeft().isSentinel() ? 0 : node.getLeft().getSize();
-        int middleSize = node.getMiddle().isSentinel() ? 0 : node.getMiddle().getSize();
-        int rightSize = node.getRight().isSentinel() ? 0 : node.getRight().getSize();
+        int leftSize = node.getLeft().isMinNode() ? 0 : node.getLeft().getSize();
+        int middleSize = node.getMiddle().isMaxNode() ? 0 : node.getMiddle().getSize();
+        int rightSize = node.getRight().isMaxNode() ? 0 : node.getRight().getSize();
         node.setSize(leftSize + middleSize + rightSize + 1); // +1 for the current node if it is not a leaf.
     }
 
@@ -719,30 +715,41 @@ public class TwoThreeTree<T> {
     //version 4.2
     public void insert23(T key) {
         Node<T> z = new Node<>(key); // Node constructor sets children to SENTINEL and size to 1
-        if (this.root.isSentinel()) {
-            this.root = z; // Tree was empty, z becomes new root
-            z.setParent((Node<T>) Node.SENTINEL); // Root's parent is sentinel
-            z.setLeaf(true); // The root is a leaf if it has no children
+        if (this.root.getLeft().isMinNode() && this.root.getMiddle().isMaxNode()) {
+            setChildren23(this.root, this.root.getLeft(), z, this.root.getMiddle());
         } else {
             Node<T> y = this.root;
-            Node<T> x = null;
             while (!y.isLeaf()) {
-                x = y; // x follows y down the tree
-                if (compareNodes(z.getKey(), y.getLeft().getKey()) < 0) {
+                if (compareNodeWithNode(z, y.getLeft()) < 0) {
                     y = y.getLeft();
-                } else if (y.getMiddle().isSentinel() || compareNodes(z.getKey(), y.getMiddle().getKey()) < 0) {
+                } else if (compareNodeWithNode(z, y.getMiddle()) < 0) {
                     y = y.getMiddle();
                 } else {
                     y = y.getRight();
                 }
             }
+
+            Node<T> x = y.getParent();
+
             // x is now the parent of y, or x is root if y was root
             if (x == null) {
                 x = this.root; // If y was the root, then it's x and we'll split the root
             }
+
             Node<T> splitChild = insertAndSplit23(x, z);
+
+            while (x != this.root) {
+                x = x.getParent();
+                if (splitChild != null) {
+                    splitChild = insertAndSplit23(x, splitChild);
+                } else {
+                    updateKey23(x); // Update the key of x
+                    updateSize(x); // Update the size of x
+                }
+            }
+
             // If root was split, handle the new root creation
-            if (splitChild != null && x == this.root) {
+            if (splitChild != null) {
                 Node<T> newRoot = new Node<>();
                 setChildren23(newRoot, x, splitChild, null);
                 this.root = newRoot;
@@ -1012,60 +1019,59 @@ public class TwoThreeTree<T> {
 
         // Choose sibling to borrow from or merge with.
         if (y == z.getLeft()) {
-            x = z.getMiddle().isSentinel() ? z.getRight() : z.getMiddle();
-            if (!x.getRight().isSentinel()) { // Borrow from x
+            x = z.getMiddle();
+            if (x.getRight() != null) { // Borrow from x
                 // y borrows the leftmost child of x
-                setChildren(y, y.getLeft(), x.getLeft(), null);
-                setChildren(x, x.getMiddle(), x.getRight(), null);
-                updateKey23(y);
-                updateKey23(x);
-                updateSize(y);
+                setChildren23(y, y.getLeft(), x.getLeft(), null);
+                setChildren23(x, x.getMiddle(), x.getRight(), null);
+                updateSize(y); //TODO: check if the size is decreased
                 updateSize(x);
             } else { // Merge y and x
-                setChildren(y, y.getLeft(), x.getLeft(), x.getMiddle());
+                setChildren23(x, y.getLeft(), x.getLeft(), x.getMiddle());
                 // Remove x from parent
-                if (!z.getMiddle().isSentinel()) {
-                    z.setMiddle(z.getRight());
-                }
-                z.setRight((Node<T>) Node.SENTINEL);
-                updateKey23(y);
+                y.setParent(null); // y is now deleted
+                setChildren23(z, x, z.getRight(), null);
                 updateSize(y);
-                updateKey23(z);
                 updateSize(z);
-                if (z == this.root && z.getRight().isSentinel()) {
-                    this.root = y; // New root after merge
-                    y.setParent((Node<T>) Node.SENTINEL);
-                    return null; // Tree has decreased in height
-                }
             }
-        } else if (y == z.getMiddle()) {
-            x = z.getLeft();
-            // Similar logic as above, adjusting for y being the middle child.
-            // ...
-        } else { // y == z.getRight()
-            x = z.getMiddle().isSentinel() ? z.getLeft() : z.getMiddle();
-            // Similar logic as above, adjusting for y being the right child.
-            // ...
+            return z;
         }
 
-        // Return the parent node to continue the deletion process up the tree.
+        if (y == z.getMiddle()) {
+            x = z.getLeft();
+            if (x.getRight() != null) { // Borrow from x
+                // y borrows the rightmost child of x
+                setChildren23(y, x.getRight(), y.getLeft(), null);
+                setChildren23(x, x.getLeft(), x.getMiddle(), null);
+                updateSize(y); //TODO: check if the size is decreased
+                updateSize(x);
+            } else { // Merge y and x
+                setChildren23(x, x.getLeft(), x.getMiddle(), y.getLeft());
+                // Remove y from parent
+                y.setParent(null); // y is now deleted
+                setChildren23(z, x, z.getRight(), null);
+                updateSize(y);
+                updateSize(z);
+            }
+            return z;
+        }
+
+        x = z.getMiddle();
+        if (x.getRight() != null) { // Borrow from x
+            // y borrows the leftmost child of x
+            setChildren23(y, x.getRight(), y.getLeft(), null);
+            setChildren23(x, x.getLeft(), x.getMiddle(), null);
+            updateSize(y); //TODO: check if the size is decreased
+            updateSize(x);
+        } else { // Merge y and x
+            setChildren23(x, x.getLeft(), x.getMiddle(), y.getLeft());
+            // Remove y from parent
+            y.setParent(null); // y is now deleted
+            setChildren23(z, z.getLeft(), x, null);
+            updateSize(y);
+            updateSize(z);
+        }
         return z;
-    }
-
-    //used in borrowOrMerge23
-    private void setChildren(Node<T> node, Node<T> left, Node<T> middle, Node<T> right) {
-        node.setLeft(left != null ? left : (Node<T>) Node.SENTINEL);
-        node.setMiddle(middle != null ? middle : (Node<T>) Node.SENTINEL);
-        node.setRight(right != null ? right : (Node<T>) Node.SENTINEL);
-
-        // Update parent pointers
-        if (!left.isSentinel()) left.setParent(node);
-        if (!middle.isSentinel()) middle.setParent(node);
-        if (!right.isSentinel()) right.setParent(node);
-
-        // Update the key and size of the node
-        updateKey23(node);
-        updateSize(node);
     }
 
     //version 1
@@ -1115,6 +1121,7 @@ public class TwoThreeTree<T> {
         Node<T> x = search23(this.root, key); // Assume search is implemented
         if (x == null || x.isSentinel()) {
             // Handle key not found or trying to delete a sentinel.
+            //TODO: throw exception?
             return;
         }
 
@@ -1122,22 +1129,27 @@ public class TwoThreeTree<T> {
         Node<T> z;
         // Handle deletion at the leaf level.
         if (x == y.getLeft()) {
-            y.setLeft(y.getMiddle().isSentinel() ? y.getRight() : y.getMiddle());
+            z = y.getMiddle();
+            setChildren23(y, z, y.getRight(), null);
         } else if (x == y.getMiddle()) {
-            y.setMiddle(y.getRight());
+            z = y.getLeft();
+            setChildren23(y, z, y.getRight(), null);
+        } else {
+            z = y.getMiddle();
+            setChildren23(y, y.getLeft(), z, null);
         }
-        y.setRight((Node<T>) Node.SENTINEL); // Remove the far right child.
+        x.setParent(null); // Prepare x for garbage collection
 
-        // Now we deal with the potential underflow at y.
-        while (!y.isSentinel()) {
-            if (y.getMiddle().isSentinel()) { // y is underfull
-                z = borrowOrMerge23(y);
-                if (z == null) { // If y was root and is now merged, we need to update root.
-                    this.root = y.getLeft();
-                    this.root.setParent((Node<T>) Node.SENTINEL);
-                    break;
+        while (y != null) {
+            if (y.getMiddle() == null) {
+                if (y != this.root) {
+                    y = borrowOrMerge23(y);
+                } else {
+                    setRoot(y.getLeft());
+                    y.getLeft().setParent(null);
+                    y.setParent(null); // Prepare y for garbage collection
+                    return;
                 }
-                y = z.getParent(); // Move up the tree
             } else {
                 updateKey23(y);
                 updateSize(y);
@@ -1318,13 +1330,14 @@ public class TwoThreeTree<T> {
     }
     public int compareNodeWithNode(Node<T> n1, Node<T> n2) {
         // Check for sentinel nodes first.
-        if (n1.isMinNode() && n2.isMaxNode()) {
+        if (n1.isMinNode()) {
             return -1;
-        } else if (n1.isMaxNode() && n2.isMinNode()) {
+        } else if (n1.isMaxNode()) {
             return 1;
-        } else if (n1.isSentinel() && n2.isSentinel()) {
-            // Two sentinels are considered equal.
-            return 0;
+        } else if (n2.isMinNode()) {
+            return 1;
+        } else if (n2.isMaxNode()) {
+            return -1;
         }
 
         // If neither node is a sentinel, extract keys and proceed with comparison.
