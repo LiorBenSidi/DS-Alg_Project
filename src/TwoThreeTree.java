@@ -355,7 +355,7 @@ public class TwoThreeTree<T> {
             return;
         }
         int leftSize = node.getLeft().isMinNode(this.MIN_SENTINEL) ? 0 : node.getLeft().getSize();
-        int middleSize = node.getMiddle().isMaxNode(this.MAX_SENTINEL) ? 0 : node.getMiddle().getSize();
+        int middleSize = (node.getMiddle() == null || node.getMiddle().isMaxNode(this.MAX_SENTINEL)) ? 0 : node.getMiddle().getSize();
         int rightSize = (node.getRight() == null || node.getRight().isMaxNode(this.MAX_SENTINEL)) ? 0 : node.getRight().getSize();
         node.setSize(leftSize + middleSize + rightSize);
     }
@@ -1056,7 +1056,7 @@ public class TwoThreeTree<T> {
                 // Remove y from parent
                 y.setParent(null); // y is now deleted
                 setChildren23(z, x, z.getRight(), null);
-                updateSize(y);
+                updateSize(x);
                 updateSize(z);
             }
             return z;
@@ -1330,11 +1330,7 @@ public class TwoThreeTree<T> {
         T r1;
 
         if (node.getKey() == null) {
-            if (node.getMiddle().getKey() == null) {
-                r1 = node.getLeft().getKey();
-            } else {
-                r1 = node.getMiddle().getKey();
-            }
+            return 1;
         } else {
             r1 = node.getKey();
         }
@@ -1356,10 +1352,13 @@ public class TwoThreeTree<T> {
             return -1;
         }
 
-        // If neither node is a sentinel, extract keys and proceed with comparison.
-
         T r1;
         if (n1.getKey() == null) {
+            return 1;
+        }else {
+            r1 = n1.getKey();
+        }
+            /*
             if (n1.getMiddle().getKey() == null) {
                 r1 = n1.getLeft().getKey();
             } else {
@@ -1367,10 +1366,15 @@ public class TwoThreeTree<T> {
             }
         } else {
             r1 = n1.getKey();
-        }
+             */
 
         T r2;
         if (n2.getKey() == null) {
+            return -1;
+        } else {
+            r2 = n2.getKey();
+        }
+            /*
             if (n2.getMiddle().getKey() == null) {
                 r2 = n2.getLeft().getKey();
             } else {
@@ -1378,7 +1382,7 @@ public class TwoThreeTree<T> {
             }
         } else {
             r2 = n2.getKey();
-        }
+             */
 
         // Existing comparison logic for non-sentinel nodes.
         return compareNodes(r1, r2);

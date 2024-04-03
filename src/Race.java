@@ -44,14 +44,18 @@ public class Race {
 
     public void removeRunner(RunnerID id)
     {
+        boolean isEmpty = false;
+
         //checks if the tree is empty
-        if (IDTree.getRoot().getKey() == null) {
-            return;
+        if (IDTree.getRoot().getLeft().isMinNode(IDTree.MIN_SENTINEL) && IDTree.getRoot().getMiddle().isMaxNode(IDTree.MAX_SENTINEL)) {
+            isEmpty = true;
         }
-        //check if the runner exists
-        if (IDTree.search23(IDTree.getRoot(), new Runner(id)) == null) {
-            throw new IllegalArgumentException("Runner with ID " + id + " not found.");
+
+        //check if the runner is already exists
+        if (!isEmpty && IDTree.search23(IDTree.getRoot(), new Runner(id)) == null) {
+            throw new IllegalArgumentException("Runner with ID " + id + " already exists.");
         }
+
         IDTree.delete23(IDTree.search23(IDTree.getRoot(), new Runner(id)).getKey());
         IDTree.setSize(IDTree.getSize() - 1);
         MinTimeTree.delete23(MinTimeTree.search23(MinTimeTree.getRoot(), new Runner(id)).getKey());

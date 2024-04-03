@@ -43,11 +43,19 @@ public class Main {
             RunnerIDInt id2 = new RunnerIDInt(5);
             RunnerIDInt id3 = new RunnerIDInt(7);
             RunnerIDInt id4 = new RunnerIDInt(9);
+            RunnerIDInt id5 = new RunnerIDInt(4);
+            RunnerIDInt id6 = new RunnerIDInt(6);
+            RunnerIDInt id7 = new RunnerIDInt(-1);
             Race race = new Race();
             race.addRunner(id1);
             race.addRunner(id2);
             race.addRunner(id3);
             race.addRunner(id4);
+            race.addRunner(id5);
+            race.addRunner(id6);
+            race.addRunner(id7);
+            race.removeRunner(id4);
+            //TODO: Add more test cases
             System.out.println("addRunner test passed.");
         } catch (Exception e) {
             System.out.println("addRunner test failed: " + e.getMessage());
