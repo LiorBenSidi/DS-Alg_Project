@@ -3,9 +3,15 @@ public class TwoThreeTree<T> {
     private String comparisonType; // Type of comparison to use for the tree
     private int size; // Number of nodes in the tree
     private Node<T> fastestRunner; // Reference to the node with the fastest runner(Run) in the tree
+    public Node<T> MIN_SENTINEL = new Node<>(null, true);
+    public Node<T> MAX_SENTINEL = new Node<>(null, true);
 
     public TwoThreeTree() {
         this.root = new Node<T>(null);
+        this.root.setLeft(this.MIN_SENTINEL);
+        this.root.setMiddle(this.MAX_SENTINEL);
+        this.root.getLeft().setParent(this.root);
+        this.root.getMiddle().setParent(this.root);
         this.comparisonType = "ID";
         this.size = 0; // Tree is initially empty
         this.fastestRunner = null;
@@ -18,7 +24,7 @@ public class TwoThreeTree<T> {
 
     //version 2
     public Node<T> search23(Node<T> node, T key) {
-        if (node.isSentinel()) { // Check if the node is a sentinel
+        if (node == null || node.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) { // Check if the node is a sentinel
             return null; // Key not found, end of search path
         }
         if (node.isLeaf()) {
@@ -64,11 +70,11 @@ public class TwoThreeTree<T> {
     //version 2
     public Node<T> minimum23() {
         Node<T> x = this.root;
-        while (!x.isLeaf() && !x.getLeft().isMinNode()) {
+        while (!x.isLeaf() && !x.getLeft().isMinNode(this.MIN_SENTINEL)) {
             x = x.getLeft(); // Continue to the leftmost child
         }
         x = x.getParent().getMiddle(); // Get the middle child of the parent
-        if (!x.isMaxNode()) {
+        if (!x.isMaxNode(this.MAX_SENTINEL)) {
             return x;
         } else {
             throw new IllegalArgumentException("Tree is empty.");
@@ -93,25 +99,25 @@ public class TwoThreeTree<T> {
     //version 2
     public Node<T> findSuccessor(Node<T> x) {
         // If the node has a right child, the successor is the minimum key in the right subtree.
-        if (!x.getRight().isSentinel()) {
+        if (!x.getRight().isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) {
             return findMinimum(x.getRight());
         }
 
         // Otherwise, go up the tree until we find a node that is the left or middle child of its parent.
         Node<T> z = x.getParent();
-        while (!z.isSentinel() && (x == z.getRight() || (z.getRight().isSentinel() && x == z.getMiddle()))) {
+        while (!z.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL) && (x == z.getRight() || (z.getRight().isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL) && x == z.getMiddle()))) {
             x = z;
             z = z.getParent();
         }
 
         // If we're at the root of the tree, there is no successor.
-        if (z.isSentinel()) {
+        if (z.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) {
             return null;
         }
 
         // The successor is either the middle or right child of the parent node.
         if (x == z.getLeft()) {
-            return z.getMiddle().isSentinel() ? z.getRight() : findMinimum(z.getMiddle());
+            return z.getMiddle().isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL) ? z.getRight() : findMinimum(z.getMiddle());
         } else {
             return z.getRight();
         }
@@ -119,7 +125,7 @@ public class TwoThreeTree<T> {
 
     //used in successor23
     private Node<T> findMinimum(Node<T> node) {
-        while (!node.getLeft().isSentinel()) {
+        while (!node.getLeft().isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) {
             node = node.getLeft();
         }
         return node;
@@ -154,7 +160,7 @@ public class TwoThreeTree<T> {
 
     //version 2
     public void updateKey23(Node<T> x) {
-        if (x.isSentinel()) {
+        if (x.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) {
             // If x is a sentinel, then there is nothing to update.
             return;
         }
@@ -194,7 +200,7 @@ public class TwoThreeTree<T> {
     //used in updateKey
     //TODO: runs at O(n) time complexity, can be optimized to O(1)
     private int calculateSubtreeSize(Node<T> node) {
-        if (node.isSentinel()) {
+        if (node.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) {
             // Sentinel nodes do not count towards the size of the tree.
             return 0;
         }
@@ -345,13 +351,13 @@ public class TwoThreeTree<T> {
 
     //used in insertAndSplit23
     private void updateSize(Node<T> node) {
-        if (node.isSentinel()) {
+        if (node.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) {
             return;
         }
-        int leftSize = node.getLeft().isMinNode() ? 0 : node.getLeft().getSize();
-        int middleSize = node.getMiddle().isMaxNode() ? 0 : node.getMiddle().getSize();
-        int rightSize = node.getRight().isMaxNode() ? 0 : node.getRight().getSize();
-        node.setSize(leftSize + middleSize + rightSize + 1); // +1 for the current node if it is not a leaf.
+        int leftSize = node.getLeft().isMinNode(this.MIN_SENTINEL) ? 0 : node.getLeft().getSize();
+        int middleSize = node.getMiddle().isMaxNode(this.MAX_SENTINEL) ? 0 : node.getMiddle().getSize();
+        int rightSize = (node.getRight() == null || node.getRight().isMaxNode(this.MAX_SENTINEL)) ? 0 : node.getRight().getSize();
+        node.setSize(leftSize + middleSize + rightSize);
     }
 
     //version 3.5
@@ -714,8 +720,8 @@ public class TwoThreeTree<T> {
 
     //version 4.2
     public void insert23(T key) {
-        Node<T> z = new Node<>(key); // Node constructor sets children to SENTINEL and size to 1
-        if (this.root.getLeft().isMinNode() && this.root.getMiddle().isMaxNode()) {
+        Node<T> z = new Node<>(key, true);
+        if (this.root.getLeft().isMinNode(this.MIN_SENTINEL) && this.root.getMiddle().isMaxNode(this.MAX_SENTINEL)) {
             setChildren23(this.root, this.root.getLeft(), z, this.root.getMiddle());
         } else {
             Node<T> y = this.root;
@@ -1119,7 +1125,7 @@ public class TwoThreeTree<T> {
     //version 3
     public void delete23(T key) {
         Node<T> x = search23(this.root, key); // Assume search is implemented
-        if (x == null || x.isSentinel()) {
+        if (x == null || x.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) {
             // Handle key not found or trying to delete a sentinel.
             //TODO: throw exception?
             return;
@@ -1313,16 +1319,26 @@ public class TwoThreeTree<T> {
     //version 2
     public int compareNodeWithKey(Node<T> node, T key) {
         // Check for sentinel nodes first.
-        if (node.isMinNode()) {
+        if (node.isMinNode(this.MIN_SENTINEL)) {
             // Sentinel is considered greater than any real key.
             return -1;
-        } else if (node.isMaxNode()) {
+        } else if (node.isMaxNode(this.MAX_SENTINEL)) {
             // Sentinel is considered greater than any real key.
             return 1;
         }
 
-        // If neither node is a sentinel, extract keys and proceed with comparison.
-        T r1 = node.getKey();
+        T r1;
+
+        if (node.getKey() == null) {
+            if (node.getMiddle().getKey() == null) {
+                r1 = node.getLeft().getKey();
+            } else {
+                r1 = node.getMiddle().getKey();
+            }
+        } else {
+            r1 = node.getKey();
+        }
+
         T r2 = key;
 
         // Existing comparison logic for non-sentinel nodes.
@@ -1330,19 +1346,39 @@ public class TwoThreeTree<T> {
     }
     public int compareNodeWithNode(Node<T> n1, Node<T> n2) {
         // Check for sentinel nodes first.
-        if (n1.isMinNode()) {
+        if (n1.isMinNode(this.MIN_SENTINEL)) {
             return -1;
-        } else if (n1.isMaxNode()) {
+        } else if (n1.isMaxNode(this.MAX_SENTINEL)) {
             return 1;
-        } else if (n2.isMinNode()) {
+        } else if (n2.isMinNode(this.MIN_SENTINEL)) {
             return 1;
-        } else if (n2.isMaxNode()) {
+        } else if (n2.isMaxNode(this.MAX_SENTINEL)) {
             return -1;
         }
 
         // If neither node is a sentinel, extract keys and proceed with comparison.
-        T r1 = n1.getKey();
-        T r2 = n2.getKey();
+
+        T r1;
+        if (n1.getKey() == null) {
+            if (n1.getMiddle().getKey() == null) {
+                r1 = n1.getLeft().getKey();
+            } else {
+                r1 = n1.getMiddle().getKey();
+            }
+        } else {
+            r1 = n1.getKey();
+        }
+
+        T r2;
+        if (n2.getKey() == null) {
+            if (n2.getMiddle().getKey() == null) {
+                r2 = n2.getLeft().getKey();
+            } else {
+                r2 = n2.getMiddle().getKey();
+            }
+        } else {
+            r2 = n2.getKey();
+        }
 
         // Existing comparison logic for non-sentinel nodes.
         return compareNodes(r1, r2);

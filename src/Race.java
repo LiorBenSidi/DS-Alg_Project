@@ -20,7 +20,7 @@ public class Race {
         boolean isEmpty = false;
 
         //checks if the tree is empty
-        if (IDTree.getRoot().getKey() == null) {
+        if (IDTree.getRoot().getLeft().isMinNode(IDTree.MIN_SENTINEL) && IDTree.getRoot().getMiddle().isMaxNode(IDTree.MAX_SENTINEL)) {
             isEmpty = true;
         }
 
