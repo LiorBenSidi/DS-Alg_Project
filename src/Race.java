@@ -56,11 +56,11 @@ public class Race {
             throw new IllegalArgumentException("Runner with ID " + id + " already exists.");
         }
 
-        IDTree.delete23(IDTree.search23(IDTree.getRoot(), new Runner(id)).getKey());
+        IDTree.delete23(IDTree.search23(IDTree.getRoot(), new Runner(id)).getKey(), null, false);
         IDTree.setSize(IDTree.getSize() - 1);
-        MinTimeTree.delete23(MinTimeTree.search23(MinTimeTree.getRoot(), new Runner(id)).getKey());
+        MinTimeTree.delete23(MinTimeTree.search23(MinTimeTree.getRoot(), new Runner(id)).getKey(), null, false);
         MinTimeTree.setSize(MinTimeTree.getSize() - 1);
-        AvgTimeTree.delete23(AvgTimeTree.search23(AvgTimeTree.getRoot(), new Runner(id)).getKey());
+        AvgTimeTree.delete23(AvgTimeTree.search23(AvgTimeTree.getRoot(), new Runner(id)).getKey(), null, false);
         AvgTimeTree.setSize(AvgTimeTree.getSize() - 1);
 
     }
@@ -75,38 +75,45 @@ public class Race {
         }
 
         // Get the runner from the search result
-        Runner runner = searchResult.getKey();
-        Runner runner2 = searchResult.getKey();
-        Runner runner3 = searchResult.getKey();
-
-        // Ensure the runner has a Runs TwoThreeTree initialized
-        if (runner.getRuns() == null) {
-            runner.setRuns(new TwoThreeTree<Run>());
-        }
+        Runner runnerID = IDTree.search23(IDTree.getRoot(), new Runner(id)).getKey();
+        Node<Runner> searchResultMinTime = MinTimeTree.search23(MinTimeTree.getRoot(), new Runner(id));
+        Runner runnerMimTime = MinTimeTree.search23(MinTimeTree.getRoot(), new Runner(id)).getKey();
+        Node<Runner> searchResultAvgTime = AvgTimeTree.search23(AvgTimeTree.getRoot(), new Runner(id));
+        Runner runnerAvgTime = AvgTimeTree.search23(AvgTimeTree.getRoot(), new Runner(id)).getKey();
 
         // Insert the new run time into the Runs TwoThreeTree of the runner
-        runner.getRuns().insert23(new Run(time, id)); // Assuming Run has a constructor Run(float time, RunnerID id)
+        runnerID.getRuns().insert23(new Run(time, id)); // Assuming Run has a constructor Run(float time, RunnerID id)
+        runnerMimTime.getRuns().insert23(new Run(time, id));
+        runnerAvgTime.getRuns().insert23(new Run(time, id));
 
         // Update min time if necessary
-        if (runner.getMinTime() == 0 || runner.getMinTime() > time) {
-            runner.setMinTime(time);
+        if (runnerID.getMinTime() > time) {
+            runnerID.setMinTime(time);
+            runnerMimTime.setMinTime(time);
+            runnerAvgTime.setMinTime(time);
         }
 
         // Update average time
         // The size is incremented within the insert23 method, so get the updated size after insertion
-        int numberOfRuns = runner.getRuns().getRoot().getSize();
-        float totalTimes = runner.getAvgTime() * (numberOfRuns - 1) + time;
+        int numberOfRuns = runnerID.getRuns().getRoot().getSize();
+        float totalTimes = runnerID.getAvgTime() * (numberOfRuns - 1) + time;
         float newAvg = numberOfRuns > 0 ? totalTimes / numberOfRuns : 0;
-        runner.setAvgTime(newAvg);
+        runnerID.setAvgTime(newAvg);
+        runnerMimTime.setAvgTime(newAvg);
+        runnerAvgTime.setAvgTime(newAvg);
 
         // Update MinTimeTree and AvgTimeTree if they exist and are not null
         if (MinTimeTree != null || AvgTimeTree != null) {
-            // Assume delete23 and insert23 handle re-balancing and re-ordering the tree
-            int size = searchResult.getSize();
-            IDTree.delete23(runner);
-            IDTree.insert23(runner);
-            MinTimeTree.insert23(runner2);
-            AvgTimeTree.insert23(runner3);
+            // Assume delete23 and insert23 handle re-balancing and re-ordering the tree;
+            IDTree.delete23(runnerID, null, false);
+            IDTree.insert23(runnerID);
+
+
+            MinTimeTree.delete23(runnerMimTime, searchResultMinTime, true);
+            MinTimeTree.insert23(runnerMimTime);
+
+            AvgTimeTree.delete23(runnerAvgTime, searchResultAvgTime, true);
+            AvgTimeTree.insert23(runnerAvgTime);
         }
     }
     //Version 1
@@ -153,7 +160,7 @@ public class Race {
 
         }
         Runner runner = IDTree.search23(IDTree.getRoot(), new Runner(id)).getKey();
-        runner.getRuns().delete23(runner.getRuns().search23(runner.getRuns().getRoot(), new Run(time, id)).getKey());
+        runner.getRuns().delete23(runner.getRuns().search23(runner.getRuns().getRoot(), new Run(time, id)).getKey(), null, false);
         if (runner.getMinTime() == time) {
             runner.setMinTime(runner.getRuns().minimum23().getKey().getTime());
         }

@@ -39,13 +39,13 @@ public class Main {
         System.out.println("Testing addRunner...");
 
         try {
-            RunnerIDInt id1 = new RunnerIDInt(3);
-            RunnerIDInt id2 = new RunnerIDInt(5);
-            RunnerIDInt id3 = new RunnerIDInt(7);
-            RunnerIDInt id4 = new RunnerIDInt(9);
-            RunnerIDInt id5 = new RunnerIDInt(4);
+            RunnerIDInt id1 = new RunnerIDInt(-1);
+            RunnerIDInt id2 = new RunnerIDInt(-2);
+            RunnerIDInt id3 = new RunnerIDInt(3);
+            RunnerIDInt id4 = new RunnerIDInt(4);
+            RunnerIDInt id5 = new RunnerIDInt(5);
             RunnerIDInt id6 = new RunnerIDInt(6);
-            RunnerIDInt id7 = new RunnerIDInt(-1);
+            RunnerIDInt id7 = new RunnerIDInt(7);
             Race race = new Race();
             race.addRunner(id1);
             race.addRunner(id2);
@@ -54,7 +54,12 @@ public class Main {
             race.addRunner(id5);
             race.addRunner(id6);
             race.addRunner(id7);
+            race.removeRunner(id1);
+            race.removeRunner(id7);
             race.removeRunner(id4);
+            race.addRunToRunner(id5, (float) 118.0);
+            race.addRunToRunner(id3, (float) 110.0); //TODO: dont work
+            race.addRunToRunner(id3, (float) 124.0);
             //TODO: Add more test cases
             System.out.println("addRunner test passed.");
         } catch (Exception e) {
