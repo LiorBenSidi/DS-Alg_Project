@@ -75,11 +75,11 @@ public class Race {
         }
 
         // Get the runner from the search result
-        Runner runnerID = IDTree.search23(IDTree.getRoot(), new Runner(id)).getKey();
-        Node<Runner> searchResultMinTime = MinTimeTree.search23(MinTimeTree.getRoot(), new Runner(id));
-        Runner runnerMimTime = MinTimeTree.search23(MinTimeTree.getRoot(), new Runner(id)).getKey();
-        Node<Runner> searchResultAvgTime = AvgTimeTree.search23(AvgTimeTree.getRoot(), new Runner(id));
-        Runner runnerAvgTime = AvgTimeTree.search23(AvgTimeTree.getRoot(), new Runner(id)).getKey();
+        Runner runnerID = searchResult.getKey();
+        Node<Runner> searchResultMinTime = MinTimeTree.search23(MinTimeTree.getRoot(), runnerID);
+        Runner runnerMimTime = searchResultMinTime.getKey();
+        Node<Runner> searchResultAvgTime = AvgTimeTree.search23(AvgTimeTree.getRoot(), runnerID);
+        Runner runnerAvgTime = searchResultAvgTime.getKey();
 
         // Insert the new run time into the Runs TwoThreeTree of the runner
         runnerID.getRuns().insert23(new Run(time, id)); // Assuming Run has a constructor Run(float time, RunnerID id)

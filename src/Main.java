@@ -58,8 +58,9 @@ public class Main {
             race.removeRunner(id7);
             race.removeRunner(id4);
             race.addRunToRunner(id5, (float) 118.0);
-            race.addRunToRunner(id3, (float) 110.0); //TODO: dont work
+            race.addRunToRunner(id3, (float) 110.0);
             race.addRunToRunner(id3, (float) 124.0);
+
             //TODO: Add more test cases
             System.out.println("addRunner test passed.");
         } catch (Exception e) {

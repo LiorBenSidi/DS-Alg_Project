@@ -36,7 +36,7 @@ public class TwoThreeTree<T> {
                 return null; // Key not found
             }
         } else {
-            if (compareNodeWithKey(key, node.getLeft()) <= 0) {
+            if (compareNodeWithKey(key, node.getLeft()) <= 0 ) {
                 return search23(node.getLeft(), key);
             } else if (compareNodeWithKey(key, node.getMiddle()) <= 0) {
                 return search23(node.getMiddle(), key);
@@ -63,8 +63,10 @@ public class TwoThreeTree<T> {
     //version 2
     public Node<T> Successor23(Node<T> x) {
         // If the node has a right child, the successor is the minimum key in the right subtree.
-        if (!x.getRight().isMaxNode(this.MAX_SENTINEL) || x.getRight() != null){
-            return findMinimum(x.getRight());
+        if (x.getRight() != null) {
+            if (!x.getRight().isMaxNode(this.MAX_SENTINEL)) {
+                return findMinimum(x.getRight());
+            }
         }
 
         // Otherwise, go up the tree until we find a node that is the left or middle child of its parent.
@@ -422,11 +424,10 @@ public class TwoThreeTree<T> {
     public int compareNodeWithKey(T key, Node<T> node) {
         // Check for sentinel nodes first.
         if (node.isMinNode(this.MIN_SENTINEL)) {
-            // Sentinel is considered greater than any real key.
-            return -1;
+            return 1;
         } else if (node.isMaxNode(this.MAX_SENTINEL)) {
             // Sentinel is considered greater than any real key.
-            return 1;
+            return -1;
         }
 
         T r1 = key;
