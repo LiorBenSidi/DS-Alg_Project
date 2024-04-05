@@ -337,12 +337,12 @@ public class TwoThreeTree<T> {
     }
 
     //version 3
-    public void delete23(T key, Node<T> searchResultMinTime, boolean isExist) {
+    public void delete23(T key, Node<T> searchResult, boolean isExist) {
         Node<T> x;
         if (!isExist) {
             x = search23(this.root, key); // Assume search is implemented
         } else {
-            x = searchResultMinTime;
+            x = searchResult;
         }
         if (x == null || x.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) {
             // Handle key not found or trying to delete a sentinel.
@@ -434,7 +434,7 @@ public class TwoThreeTree<T> {
         T r2;
 
         if (node.getKey() == null) {
-            return 1;
+            return -1;
         } else {
             r2 = node.getKey();
         }
@@ -460,15 +460,6 @@ public class TwoThreeTree<T> {
         }else {
             r1 = n1.getKey();
         }
-            /*
-            if (n1.getMiddle().getKey() == null) {
-                r1 = n1.getLeft().getKey();
-            } else {
-                r1 = n1.getMiddle().getKey();
-            }
-        } else {
-            r1 = n1.getKey();
-             */
 
         T r2;
         if (n2.getKey() == null) {
@@ -476,15 +467,6 @@ public class TwoThreeTree<T> {
         } else {
             r2 = n2.getKey();
         }
-            /*
-            if (n2.getMiddle().getKey() == null) {
-                r2 = n2.getLeft().getKey();
-            } else {
-                r2 = n2.getMiddle().getKey();
-            }
-        } else {
-            r2 = n2.getKey();
-             */
 
         // Existing comparison logic for non-sentinel nodes.
         return compareNodes(r1, r2);

@@ -87,7 +87,9 @@ public class Node<T> {
 
     public void setLeaf(boolean leaf) {
         isLeaf = leaf;
-        size = 1;
+        if (isLeaf) {
+            size = 1;
+        }
     }
 
     public boolean isMaxNode(Node<T> MAX_SENTINEL) {

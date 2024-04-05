@@ -59,12 +59,12 @@ public class Main {
             race.removeRunner(id4);
             race.addRunToRunner(id5, (float) 118.0);
             race.addRunToRunner(id3, (float) 110.0);
-            race.addRunToRunner(id3, (float) 124.0);
-            //TODO: Add more test cases
-            race.addRunToRunner(id3, (float) 124.0);
-            race.addRunToRunner(id5, (float) 118.0);
+            race.addRunToRunner(id3, (float) 120.0);
             race.addRunToRunner(id5, (float) 110.0);
+            race.addRunToRunner(id5, (float) 109.0);
             race.addRunToRunner(id5, (float) 105.0);
+            race.getRankMin(id5);
+            race.getRankMin(id3);
             System.out.println("addRunner test passed.");
         } catch (Exception e) {
             System.out.println("addRunner test failed: " + e.getMessage());
