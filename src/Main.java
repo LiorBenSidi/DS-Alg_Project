@@ -20,16 +20,18 @@ class RunnerIDInt extends RunnerID{
 
 public class Main {
     public static void main(String[] args) {
-        testAddRunner();
         /*
+        testAddRunner();
         testLargeDataset();
         testAddRunToRunner();
         testRemoveRunFromRunner();
         testRemoveRunner();
         testGetMinRun();
         testGetAvgRun();
+         */
         testGetFastestRunnerAvg();
         testGetFastestRunnerMin();
+        /*
         testGetRankAvg();
         testGetRankMin();
         stressTestRace();

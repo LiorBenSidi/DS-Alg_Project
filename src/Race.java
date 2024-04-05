@@ -207,6 +207,7 @@ public class Race {
                 IDTree.getRoot().getMiddle().isMaxNode(IDTree.MAX_SENTINEL)) {
             throw new IllegalArgumentException("No runners have been added yet.");
         } else {
+            System.out.println(AvgTimeTree.getFastestRunner().getKey().getID());
             return AvgTimeTree.getFastestRunner().getKey().getID();
         }
     }
@@ -218,6 +219,7 @@ public class Race {
                 IDTree.getRoot().getMiddle().isMaxNode(IDTree.MAX_SENTINEL)) {
             throw new IllegalArgumentException("No runners have been added yet.");
         } else {
+            System.out.println(MinTimeTree.getFastestRunner().getKey().getID());
             return MinTimeTree.getFastestRunner().getKey().getID();
         }
     }
