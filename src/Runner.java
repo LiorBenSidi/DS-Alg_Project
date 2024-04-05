@@ -15,16 +15,8 @@ public class Runner{
         return ID;
     }
 
-    public void setID(RunnerID ID) {
-        this.ID = ID;
-    }
-
     public TwoThreeTree<Run> getRuns() {
         return Runs;
-    }
-
-    public void setRuns(TwoThreeTree<Run> runs) {
-        Runs = runs;
     }
 
     public float getMinTime() {

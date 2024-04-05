@@ -1,8 +1,9 @@
-import java.security.Key;
-
 public class Node<T> {
     private T key;
-    private Node<T> left, middle, right, parent;
+    private Node<T> left;
+    private Node<T> middle;
+    private Node<T> right;
+    private Node<T> parent;
     private boolean isLeaf;
     private int size;
 
@@ -32,19 +33,8 @@ public class Node<T> {
         }
     }
 
-    // Public constructor for normal nodes
     public Node(T key) {
         this(key, false);
-    }
-
-    public Node(Node<T> left, Node<T> middle, Node<T> right, Node<T> parent, T key, Boolean isLeaf, int size) {
-        this.left = left;
-        this.middle = middle;
-        this.right = right;
-        this.parent = parent;
-        this.key = key;
-        this.isLeaf = isLeaf;
-        this.size = size;
     }
 
     public T getKey() {

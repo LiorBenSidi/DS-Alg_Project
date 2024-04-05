@@ -1,0 +1,59 @@
+└──
+    ├──
+    │   ├──
+    │   │   ├── : s-
+    │   │   ├── : 34
+    │   ├──
+    │   │   ├── : 36
+    │   │   ├── : 41
+    ├──
+    │   ├──
+    │   │   ├── : 42
+    │   │   ├── : 71
+    │   │   └── : 83
+    │   ├──
+    │   │   ├── : 85
+    │   │   ├── : 87
+    │   └──
+    │       ├── : 94
+    │       ├── : s+
+
+The min running time of 34 is 5.93
+The avg running time of 34 is 27.4
+
+
+The min running time of 83 is 29.31
+The avg running time of 83 is 64.669
+
+
+The min running time of 36 is 20.27
+The avg running time of 36 is 61.944996
+
+
+The min running time of 85 is 1.2
+The avg running time of 85 is 55.407005
+
+
+The min running time of 71 is 40.37
+The avg running time of 71 is 73.94499
+
+
+The min running time of 87 is 5.46
+The avg running time of 87 is 40.185005
+
+
+The min running time of 41 is 2.29
+The avg running time of 41 is 32.454002
+
+
+The min running time of 42 is 27.26
+The avg running time of 42 is 55.034004
+
+
+The min running time of 94 is 14.3
+The avg running time of 94 is 55.969
+
+The runner with the smallest minimum time is 85
+The runner with the smallest minimum time is 34
+Runners rank:
+(34 - 1) (83 - 6) (36 - 2) (85 - 7) (71 - 5) (87 - 8) (41 - 3) (42 - 4) (94 - 9)

@@ -1,12 +1,10 @@
-import java.security.Key;
-
 public class TwoThreeTree<T> {
-    private Node<T> root; // Root of the tree
-    private String comparisonType; // Type of comparison to use for the tree
-    private int size; // Number of nodes in the tree
-    private Node<T> fastestRunner; // Reference to the node with the fastest Runner/Run in the tree
-    public Node<T> MIN_SENTINEL = new Node<>(null, true);
-    public Node<T> MAX_SENTINEL = new Node<>(null, true);
+    private Node<T> root;
+    private String comparisonType;
+    private int size;
+    private Node<T> fastestRunner;
+    public Node<T> MIN_SENTINEL = new Node<>(null, true); // Sentinel node for minus infinity
+    public Node<T> MAX_SENTINEL = new Node<>(null, true); // Sentinel node for plus infinity
 
     public TwoThreeTree() {
         this.root = new Node<T>(null);
@@ -24,17 +22,16 @@ public class TwoThreeTree<T> {
         this.comparisonType = comparisonType;
     }
 
-    //version 2
     public Node<T> search23(Node<T> node, T key) {
         if (node == null ||
-                node.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) { // Check if the node is a sentinel
-            return null; // Key not found, end of search path
+                node.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) {
+            return null;
         }
         if (node.isLeaf()) {
             if (compareNodeWithKey(key, node) == 0) {
-                return node; // Key found
+                return node;
             } else {
-                return null; // Key not found
+                return null;
             }
         } else {
             if (compareNodeWithKey(key, node.getLeft()) <= 0 ) {
@@ -47,13 +44,12 @@ public class TwoThreeTree<T> {
         }
     }
 
-    //version 2
     public Node<T> minimum23() {
         Node<T> x = this.root;
         while (!x.isLeaf() && !x.getLeft().isMinNode(this.MIN_SENTINEL)) {
-            x = x.getLeft(); // Continue to the leftmost child
+            x = x.getLeft();
         }
-        x = x.getParent().getMiddle(); // Get the middle child of the parent
+        x = x.getParent().getMiddle();
         if (!x.isMaxNode(this.MAX_SENTINEL)) {
             return x;
         } else {
@@ -61,23 +57,19 @@ public class TwoThreeTree<T> {
         }
     }
 
-    //version 2
     public Node<T> Successor23(Node<T> x) {
-        // If the node has a right child, the successor is the minimum key in the right subtree.
         if (x.getRight() != null) {
             if (!x.getRight().isMaxNode(this.MAX_SENTINEL)) {
                 return findMinimum(x.getRight());
             }
         }
 
-        // Otherwise, go up the tree until we find a node that is the left or middle child of its parent.
         Node<T> z = x.getParent();
         while (x == z.getRight() || (z.getRight() == null && x == z.getMiddle())) {
             x = z;
             z = z.getParent();
         }
 
-        //
         Node<T> y;
         if (x == z.getLeft()) {
             y = z.getMiddle();
@@ -89,7 +81,6 @@ public class TwoThreeTree<T> {
             y = y.getLeft();
         }
 
-        // The successor is either the middle or right child of the parent node.
         if (!y.isMaxNode(MAX_SENTINEL)) {
             return y;
         } else {
@@ -97,62 +88,35 @@ public class TwoThreeTree<T> {
         }
     }
 
-    //used in successor23
-    private Node<T> findMinimum(Node<T> node) {
-        while (!node.getLeft().isLeaf() && !node.getLeft().isMinNode(this.MIN_SENTINEL)) {
-            node = node.getLeft();
+    private Node<T> findMinimum(Node<T> node) { // Find the minimum node in the subtree rooted at node
+        while (!node.getLeft().isLeaf() && !node.getLeft().isMinNode(this.MIN_SENTINEL)) { // Find the leftmost node
+            node = node.getLeft(); // Go left
         }
-        return node;
+        return node; // Return the leftmost node
     }
 
-    //version 2
     public void updateKey23(Node<T> x) {
         if (x.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) {
-            // If x is a sentinel, then there is nothing to update.
             return;
         }
 
-        // Start with the leftmost key, since x.left should never be a sentinel.
         x.setKey(x.getLeft().getKey());
 
-        // Update x.key to the key of x.middle if x.middle is not a sentinel.
         if (x.getMiddle() != null) {
             x.setKey(x.getMiddle().getKey());
         }
 
-        // Update x.key to the key of x.right if x.right is not a sentinel.
         if (x.getRight() != null) {
             x.setKey(x.getRight().getKey());
         }
     }
 
-    //used in updateKey
-    //TODO: runs at O(n) time complexity, can be optimized to O(1)
-    private int calculateSubtreeSize(Node<T> node) {
-        if (node.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) {
-            // Sentinel nodes do not count towards the size of the tree.
-            return 0;
-        }
-        if (node.isLeaf()) {
-            // Leaf nodes count as 1.
-            return 1;
-        }
-        // Sum the sizes of the child nodes and add 1 for the current node.
-        return calculateSubtreeSize(node.getLeft()) +
-                calculateSubtreeSize(node.getMiddle()) +
-                calculateSubtreeSize(node.getRight()) + 1;
-    }
-
-    //version 4
     public void setChildren23(Node<T> x, Node<T> left, Node<T> middle, Node<T> right) {
-        // Set the children of x to either a valid node or the sentinel node.
         x.setLeft(left);
         x.setMiddle(middle);
         x.setRight(right);
 
         left.setParent(x);
-
-        // Update the parent pointers of the children to x
 
         if (middle != null) {
             middle.setParent(x);
@@ -161,20 +125,15 @@ public class TwoThreeTree<T> {
             right.setParent(x);
         }
 
-        // Update the key of x to the maximum key in its subtree
         updateKey23(x);
     }
 
     //version 4
     public Node<T> insertAndSplit23(Node<T> x, Node<T> z) {
-        // Assume `z` is already created and `z.key` has been set.
-
-        // Variables to hold children for easy access and comparison.
         Node<T> l = x.getLeft();
         Node<T> m = x.getMiddle();
         Node<T> r = x.getRight();
 
-        // Case 1: x has only 2 children (x.right is sentinel).
         if (r == null) {
             if (compareNodeWithNode(z, l) < 0) {
                 setChildren23(x, z, l, m);
@@ -183,15 +142,12 @@ public class TwoThreeTree<T> {
             } else {
                 setChildren23(x, l, m, z);
             }
-            // Update size of `x` and return `null` as there was no split.
             updateSize(x);
             return null;
         }
 
-        // Create a new node `y` that might be the result of a split.
         Node<T> y = new Node<T>();
 
-        // Case 2: x has 3 children and needs to be split.
         if (compareNodeWithNode(z, l) < 0) {
             setChildren23(x, z, l, null);
             setChildren23(y, m, r, null);
@@ -206,27 +162,29 @@ public class TwoThreeTree<T> {
             setChildren23(y, r, z, null);
         }
 
-        // Update sizes after the split.
         updateSize(x);
         updateSize(y);
 
         return y;
     }
 
-    //used in insertAndSplit23
-    private void updateSize(Node<T> node) {
-        if (node.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) {
+    private void updateSize(Node<T> node) { // Update the size of the node
+        if (node.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) { // If the node is a sentinel node
             return;
         }
+
+        // Get the size of the left child
         int leftSize = node.getLeft().isMinNode(this.MIN_SENTINEL) ? 0 : node.getLeft().getSize();
+        // Get the size of the middle child
         int middleSize = (node.getMiddle() == null ||
                 node.getMiddle().isMaxNode(this.MAX_SENTINEL)) ? 0 : node.getMiddle().getSize();
+        // Get the size of the right child
         int rightSize = (node.getRight() == null ||
                 node.getRight().isMaxNode(this.MAX_SENTINEL)) ? 0 : node.getRight().getSize();
+        // Set the size of the node
         node.setSize(leftSize + middleSize + rightSize);
     }
 
-    //version 4.2
     public void insert23(T key) {
         Node<T> z = new Node<>(key, true);
         if (this.root.getLeft().isMinNode(this.MIN_SENTINEL) && this.root.getMiddle().isMaxNode(this.MAX_SENTINEL)) {
@@ -249,9 +207,8 @@ public class TwoThreeTree<T> {
 
             Node<T> x = y.getParent();
 
-            // x is now the parent of y, or x is root if y was root
             if (x == null) {
-                x = this.root; // If y was the root, then it's x and we'll split the root
+                x = this.root;
             }
 
             Node<T> splitChild = insertAndSplit23(x, z);
@@ -261,40 +218,35 @@ public class TwoThreeTree<T> {
                 if (splitChild != null) {
                     splitChild = insertAndSplit23(x, splitChild);
                 } else {
-                    updateKey23(x); // Update the key of x
-                    updateSize(x); // Update the size of x
+                    updateKey23(x);
+                    updateSize(x);
                 }
             }
 
-            // If root was split, handle the new root creation
             if (splitChild != null) {
                 Node<T> newRoot = new Node<>();
                 setChildren23(newRoot, x, splitChild, null);
                 this.root = newRoot;
-                updateSize(newRoot); // Update the size from the root
+                updateSize(newRoot);
             }
         }
 
     }
 
-    //version 2
     private Node<T> borrowOrMerge23(Node<T> y) {
         Node<T> z = y.getParent();
         Node<T> x;
 
-        // Choose sibling to borrow from or merge with.
         if (y == z.getLeft()) {
             x = z.getMiddle();
-            if (x.getRight() != null) { // Borrow from x
-                // y borrows the leftmost child of x
+            if (x.getRight() != null) {
                 setChildren23(y, y.getLeft(), x.getLeft(), null);
                 setChildren23(x, x.getMiddle(), x.getRight(), null);
-                updateSize(y); //TODO: check if the size is decreased
+                updateSize(y);
                 updateSize(x);
-            } else { // Merge y and x
+            } else {
                 setChildren23(x, y.getLeft(), x.getLeft(), x.getMiddle());
-                // Remove x from parent
-                y.setParent(null); // y is now deleted
+                y.setParent(null);
                 setChildren23(z, x, z.getRight(), null);
                 updateSize(y);
                 updateSize(z);
@@ -304,16 +256,14 @@ public class TwoThreeTree<T> {
 
         if (y == z.getMiddle()) {
             x = z.getLeft();
-            if (x.getRight() != null) { // Borrow from x
-                // y borrows the rightmost child of x
+            if (x.getRight() != null) {
                 setChildren23(y, x.getRight(), y.getLeft(), null);
                 setChildren23(x, x.getLeft(), x.getMiddle(), null);
-                updateSize(y); //TODO: check if the size is decreased
+                updateSize(y);
                 updateSize(x);
-            } else { // Merge y and x
+            } else {
                 setChildren23(x, x.getLeft(), x.getMiddle(), y.getLeft());
-                // Remove y from parent
-                y.setParent(null); // y is now deleted
+                y.setParent(null);
                 setChildren23(z, x, z.getRight(), null);
                 updateSize(x);
                 updateSize(z);
@@ -322,16 +272,14 @@ public class TwoThreeTree<T> {
         }
 
         x = z.getMiddle();
-        if (x.getRight() != null) { // Borrow from x
-            // y borrows the leftmost child of x
+        if (x.getRight() != null) {
             setChildren23(y, x.getRight(), y.getLeft(), null);
             setChildren23(x, x.getLeft(), x.getMiddle(), null);
-            updateSize(y); //TODO: check if the size is decreased
+            updateSize(y);
             updateSize(x);
-        } else { // Merge y and x
+        } else {
             setChildren23(x, x.getLeft(), x.getMiddle(), y.getLeft());
-            // Remove y from parent
-            y.setParent(null); // y is now deleted
+            y.setParent(null);
             setChildren23(z, z.getLeft(), x, null);
             updateSize(y);
             updateSize(z);
@@ -339,25 +287,23 @@ public class TwoThreeTree<T> {
         return z;
     }
 
-    //version 3
     public void delete23(T key, Node<T> searchResult, boolean isExist) {
         Node<T> x;
         if (!isExist) {
-            x = search23(this.root, key); // Assume search is implemented
+            x = search23(this.root, key);
         } else {
             x = searchResult;
         }
         if (x == null || x.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) {
-            // Handle key not found or trying to delete a sentinel.
             throw new IllegalArgumentException("Key not found.");
         }
         if (fastestRunner != null && compareNodeWithNode(x, fastestRunner) == 0) {
-            // Find the new fastest runner in the tree
             fastestRunner = Successor23(fastestRunner);
         }
+
         Node<T> y = x.getParent();
         Node<T> z;
-        // Handle deletion at the leaf level.
+
         if (x == y.getLeft()) {
             z = y.getMiddle();
             setChildren23(y, z, y.getRight(), null);
@@ -368,7 +314,8 @@ public class TwoThreeTree<T> {
             z = y.getMiddle();
             setChildren23(y, y.getLeft(), z, null);
         }
-        x.setParent(null); // Prepare x for garbage collection
+
+        x.setParent(null);
 
         while (y != null) {
             if (y.getMiddle() == null) {
@@ -377,7 +324,7 @@ public class TwoThreeTree<T> {
                 } else {
                     setRoot(y.getLeft());
                     y.getLeft().setParent(null);
-                    y.setParent(null); // Prepare y for garbage collection
+                    y.setParent(null);
                     return;
                 }
             } else {
@@ -388,24 +335,23 @@ public class TwoThreeTree<T> {
         }
     }
 
-    public int Rank(Node<T> x) {
-        int rank = 1;
-        Node<T> y = x.getParent();
-        while (y != null) {
-            if (x == y.getMiddle()) {
-                rank = rank + y.getLeft().getSize();
-
-            } else if (x == y.getRight()) {
+    public int Rank(Node<T> x) { // Find the rank of the node x
+        int rank = 1; // Initialize the rank to 1
+        Node<T> y = x.getParent(); // Get the parent of the node x
+        while (y != null) { // While the parent is not null
+            if (x == y.getMiddle()) { // If x is the middle child of y
+                rank = rank + y.getLeft().getSize(); // Increment the rank by the size of the left child of y
+            } else if (x == y.getRight()) { // If x is the right child of y
+                // Increment the rank by the size of the left and middle children of y
                 rank = rank + y.getLeft().getSize() + y.getMiddle().getSize();
             }
-            x = y;
-            y = y.getParent();
+
+            x = y; // Set x to y
+            y = y.getParent(); // Set y to the parent of y
         }
+
         return rank;
     }
-
-
-
 
     public Node<T> getRoot() {
         return root;
@@ -415,88 +361,75 @@ public class TwoThreeTree<T> {
         this.root = root;
     }
 
-    public String getComparisonType() {
-        return comparisonType;
-    }
-
-    public void setComparisonType(String comparisonType) {
-        this.comparisonType = comparisonType;
-    }
-
     //version 2
-    public int compareNodeWithKey(T key, Node<T> node) {
-        // Check for sentinel nodes first.
-        if (node.isMinNode(this.MIN_SENTINEL)) {
-            return 1;
-        } else if (node.isMaxNode(this.MAX_SENTINEL)) {
-            // Sentinel is considered greater than any real key.
+    public int compareNodeWithKey(T key, Node<T> node) { // Compare the key of a node with a given key
+        if (node.isMinNode(this.MIN_SENTINEL)) { // If the node is the minimum sentinel node
+            return 1; // it is considered smaller than any real key
+        } else if (node.isMaxNode(this.MAX_SENTINEL)) { // If the node is the maximum sentinel node
+            // it is considered larger than any real key
             return -1;
         }
 
-        T r1 = key;
-        T r2;
+        T r1 = key; // Get the key of the node
+        T r2; // Declare a variable to store the key of the node
 
-        if (node.getKey() == null) {
-            return -1;
-        } else {
-            r2 = node.getKey();
+        if (node.getKey() == null) { // If the key of the node is null
+            return -1; // it is considered larger than any real key
+        } else { // If the key of the node is not null
+            r2 = node.getKey(); // Get the key of the node
         }
 
-        // Existing comparison logic for non-sentinel nodes.
-        return compareNodes(r1, r2);
+        return compareNodes(r1, r2); // Compare the two keys
     }
-    public int compareNodeWithNode(Node<T> n1, Node<T> n2) {
-        // Check for sentinel nodes first.
-        if (n1.isMinNode(this.MIN_SENTINEL)) {
-            return -1;
-        } else if (n1.isMaxNode(this.MAX_SENTINEL)) {
-            return 1;
-        } else if (n2.isMinNode(this.MIN_SENTINEL)) {
-            return 1;
-        } else if (n2.isMaxNode(this.MAX_SENTINEL)) {
-            return -1;
+    public int compareNodeWithNode(Node<T> n1, Node<T> n2) { // Compare the key of a node with the key of another node
+        if (n1.isMinNode(this.MIN_SENTINEL)) { // If the first node is the minimum sentinel node
+            return -1; // it is considered smaller
+        } else if (n1.isMaxNode(this.MAX_SENTINEL)) { // If the first node is the maximum sentinel node
+            return 1; // it is considered larger
+        } else if (n2.isMinNode(this.MIN_SENTINEL)) { // If the second node is the minimum sentinel node
+            return 1; // it is considered smaller
+        } else if (n2.isMaxNode(this.MAX_SENTINEL)) { // If the second node is the maximum sentinel node
+            return -1; // it is considered larger
         }
 
-        T r1;
-        if (n1.getKey() == null) {
-            return 1;
-        }else {
-            r1 = n1.getKey();
+        T r1; // Declare a variable to store the key of the first node
+        if (n1.getKey() == null) { // If the key of the first node is null
+            return 1; // it is considered larger
+        }else { // If the key of the first node is not null
+            r1 = n1.getKey(); // Get the key of the first node
         }
 
-        T r2;
-        if (n2.getKey() == null) {
-            return -1;
-        } else {
-            r2 = n2.getKey();
+        T r2; // Declare a variable to store the key of the second node
+        if (n2.getKey() == null) { // If the key of the second node is null
+            return -1; // it is considered larger
+        } else { // If the key of the second node is not null
+            r2 = n2.getKey(); // Get the key of the second node
         }
 
-        // Existing comparison logic for non-sentinel nodes.
-        return compareNodes(r1, r2);
+        return compareNodes(r1, r2); // Compare the two keys
     }
-    private int compareNodes(T r1, T r2) {
-        // Existing comparison logic for non-sentinel nodes.
-        if ((r1 instanceof Runner) && (r2 instanceof Runner)) {
-            switch (comparisonType) {
-                case "ID":
+    private int compareNodes(T r1, T r2) { // Compare two keys
+        if ((r1 instanceof Runner) && (r2 instanceof Runner)) { // If the keys are instances of Runner
+            switch (comparisonType) { // Switch on the comparison type
+                case "ID": // If the comparison type is ID, compare the IDs of the runners
                     return compareRunnerID((Runner) r1, (Runner) r2);
-                case "MinTime":
-                    if (compareMinTime(((Runner) r1), ((Runner) r2)) == 0) {
-                        return compareRunnerID((Runner) r1, (Runner) r2);
-                    } else {
-                        return compareMinTime(((Runner) r1), ((Runner) r2));
+                case "MinTime": // If the comparison type is MinTime, compare the minimum times of the runners
+                    if (compareMinTime(((Runner) r1), ((Runner) r2)) == 0) { // If the minimum times are equal
+                        return compareRunnerID((Runner) r1, (Runner) r2); // Compare the IDs of the runners
+                    } else { // If the minimum times are not equal
+                        return compareMinTime(((Runner) r1), ((Runner) r2)); // Compare the minimum times of the runners
                     }
-                case "AvgTime":
-                    if (compareAvgTime(((Runner) r1), ((Runner) r2)) == 0) {
-                        return compareRunnerID((Runner) r1, (Runner) r2);
-                    } else {
-                        return compareAvgTime(((Runner) r1), ((Runner) r2));
+                case "AvgTime": // If the comparison type is AvgTime, compare the average times of the runners
+                    if (compareAvgTime(((Runner) r1), ((Runner) r2)) == 0) { // If the average times are equal
+                        return compareRunnerID((Runner) r1, (Runner) r2); // Compare the IDs of the runners
+                    } else { // If the average times are not equal
+                        return compareAvgTime(((Runner) r1), ((Runner) r2)); // Compare the average times of the runners
                     }
                 default:
                     throw new IllegalArgumentException("Invalid comparison type: " + comparisonType);
             }
-        } else if (r1 instanceof Run && r2 instanceof Run){
-            if (comparisonType.equals("Time")) {
+        } else if (r1 instanceof Run && r2 instanceof Run){ // If the keys are instances of Run
+            if (comparisonType.equals("Time")) { // If the comparison type is Time, compare the times of the runs
                 return Float.compare(((Run) r1).getTime(),((Run) r2).getTime());
             }
             throw new IllegalArgumentException("Invalid comparison type: " + comparisonType);
@@ -505,59 +438,32 @@ public class TwoThreeTree<T> {
         }
     }
 
-
-    //version 1
-    /*
-    private int compareNodes(T r1, T r2) {
-        if ((r1 instanceof Runner) && (r2 instanceof Runner)) {
-            switch (comparisonType) {
-                case "ID":
-                    return compareRunnerID((Runner) r1, (Runner) r2);
-                case "MinTime":
-                    return Float.compare(((Runner) r1).getMinTime(), ((Runner) r2).getMinTime());
-                case "AvgTime":
-                    return Float.compare(((Runner) r1).getAvgTime(), ((Runner) r2).getAvgTime());
-                default:
-                    throw new IllegalArgumentException("Invalid comparison type: " + comparisonType);
-            }
-        } else if (r1 instanceof Run && r2 instanceof Run){
-            if (comparisonType.equals("Time")) {
-                return Float.compare(((Run) r1).getTime(),((Run) r2).getTime());
-            }
-            throw new IllegalArgumentException("Invalid comparison type: " + comparisonType);
-        } else {
-            throw new IllegalArgumentException("Invalid comparison type: " + comparisonType);
-        }
-    }
-     */
-
-
-    private int compareRunnerID(Runner r1, Runner r2) {
-        if (r1.getID().isSmaller(r2.getID())) {
+    private int compareRunnerID(Runner r1, Runner r2) { // Compare the IDs of two runners
+        if (r1.getID().isSmaller(r2.getID())) { // If the ID of the first runner is smaller
             return -1;
-        } else if (r2.getID().isSmaller(r1.getID())) {
+        } else if (r2.getID().isSmaller(r1.getID())) { // If the ID of the second runner is smaller
             return 1;
-        } else {
+        } else { // If the IDs are equal
             return 0;
         }
     }
 
-    private int compareMinTime(Runner r1, Runner r2) {
-        if (r1.getMinTime() < r2.getMinTime()) {
+    private int compareMinTime(Runner r1, Runner r2) { // Compare the minimum times of two runners
+        if (r1.getMinTime() < r2.getMinTime()) { // If the minimum time of the first runner is smaller
             return -1;
-        } else if (r2.getMinTime() < r1.getMinTime()) {
+        } else if (r2.getMinTime() < r1.getMinTime()) { // If the minimum time of the second runner is smaller
             return 1;
-        } else {
+        } else { // If the minimum times are equal
             return 0;
         }
     }
 
-    private int compareAvgTime(Runner r1, Runner r2) {
-        if (r1.getAvgTime() < r2.getAvgTime()) {
+    private int compareAvgTime(Runner r1, Runner r2) { // Compare the average times of two runners
+        if (r1.getAvgTime() < r2.getAvgTime()) { // If the average time of the first runner is smaller
             return -1;
-        } else if (r2.getAvgTime() < r1.getAvgTime()) {
+        } else if (r2.getAvgTime() < r1.getAvgTime()) { // If the average time of the second runner is smaller
             return 1;
-        } else {
+        } else { // If the average times are equal
             return 0;
         }
     }
@@ -571,9 +477,5 @@ public class TwoThreeTree<T> {
 
     public Node<T> getFastestRunner() {
         return fastestRunner;
-    }
-
-    public void setFastestRunner(Node<T> fastestRunner) {
-        this.fastestRunner = fastestRunner;
     }
 }

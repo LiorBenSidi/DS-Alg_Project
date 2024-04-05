@@ -1,0 +1,94 @@
+C:\Users\USER\.jdks\openjdk-19.0.1\bin\java.exe "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2022.3.3\lib\idea_rt.jar=57978:C:\Program Files\JetBrains\IntelliJ IDEA 2022.3.3\bin" -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath C:\Users\USER\IdeaProjects\MibneiProject\out\production\MibneiProject;C:\Users\USER\.m2\repository\org\jetbrains\annotations\24.0.0\annotations-24.0.0.jar TestRace
+starting to test:
+The minimum time is: 3.4028235E38
+
+The average time is: 3.4028235E38
+
+The minimum time is: 118.0
+The average time is: 118.0
+Fastest runner average: 3
+Fastest runner minimum: 3
+the rank in the average tree is: 1
+the rank in the minimum tree is: 1
+
+caught
+caught
+caught
+adding the 2 element:
+adding the 5 element:
+adding the 6 element:
+adding the 3 element:
+adding the 9 element:
+adding the 1 element:
+--- test 4: add null ---
+--- test 1: adding deleting and adding again ---
+--- test 2: deleting in different orders ---
+--- test 3: deleting a runner that does not exist ---
+--- test 4: deleting a runner that used to exist ---
+--- test 5: remove a  null ---
+--- test 6: what if I add runner, remove the runner, add it again ---
+--- test 1: adding runs ---
+--- test 2: negative runs are not allowed ---
+--- test 3: add a run to a runner that does not exist ---
+--- test 4: add a run to a runner that is null ---
+--- test 5: what if I add runner, add runs, remove the runner, add it again ---
+--- test 6: avg and min trees ---
+--- test 1: removing unique runs ---
+--- test 2: removing non unique runs ---
+--- test 3: remove a run that does not exist ---
+--- test 4: remove a run that used to exist ---
+--- test 5: remove a run from a runner that does not exist ---
+--- test 6: remove a run from null ---
+--- test 7: avg and min trees ---
+change runner 2:
+--- test 1: get null ---
+--- test 2: general ---
+value: 3.4028235E38
+value: 15.0
+--- test 1: get null ---
+--- test 2: general ---
+value: 3.4028235E38
+value: 16.0
+--- test 1: no runners ---
+caught
+--- test 2: no runs ---
+value: 2
+value: 1
+--- test 3: with runs ---
+value: 1
+value: 1
+value: 2
+--- test 2: no runs ---
+value: 2
+value: 1
+--- test 3: with runs ---
+value: 1
+value: 1
+value: 2
+value: 2
+value: 2
+--- test 1: null ---
+--- test 2: runner does not exist ---
+--- test 3: no runs ---
+value: 1
+value: 2
+--- test 4: with runs ---
+value: 1
+value: 2
+value: 1
+value: 2
+--- test 1: null ---
+--- test 2: runner does not exist ---
+--- test 3: no runs ---
+value: 1
+value: 2
+--- test 4: with runs ---
+value: 1
+value: 2
+value: 1
+value: 2
+value: 1
+value: 2
+finished testing
+
+Process finished with exit code 0

@@ -1,6 +1,6 @@
 public class Run {
-    private float Time; //Time of the run
-    private final RunnerID ID; //ID of the runner
+    private float Time;
+    private final RunnerID ID;
 
     public Run(float time, RunnerID id) {
         Time = time;
@@ -13,9 +13,5 @@ public class Run {
 
     public void setTime(float time) {
         Time = time;
-    }
-
-    public RunnerID getID() {
-        return ID;
     }
 }
