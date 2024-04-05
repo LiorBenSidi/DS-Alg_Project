@@ -1,3 +1,5 @@
+import java.security.Key;
+
 public class Node<T> {
     private T key;
     private Node<T> left, middle, right, parent;
@@ -23,7 +25,11 @@ public class Node<T> {
         this.middle = null;
         this.right = null;
         this.parent = null;
-        this.size = 1; // Adjust based on your size logic
+        if (isLeaf && this.key == null) {
+            this.size = 0;
+        } else {
+            this.size = 1;
+        }
     }
 
     // Public constructor for normal nodes

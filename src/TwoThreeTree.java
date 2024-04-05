@@ -26,7 +26,8 @@ public class TwoThreeTree<T> {
 
     //version 2
     public Node<T> search23(Node<T> node, T key) {
-        if (node == null || node.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) { // Check if the node is a sentinel
+        if (node == null ||
+                node.isSentinel(this.MIN_SENTINEL, this.MAX_SENTINEL)) { // Check if the node is a sentinel
             return null; // Key not found, end of search path
         }
         if (node.isLeaf()) {
@@ -218,8 +219,10 @@ public class TwoThreeTree<T> {
             return;
         }
         int leftSize = node.getLeft().isMinNode(this.MIN_SENTINEL) ? 0 : node.getLeft().getSize();
-        int middleSize = (node.getMiddle() == null || node.getMiddle().isMaxNode(this.MAX_SENTINEL)) ? 0 : node.getMiddle().getSize();
-        int rightSize = (node.getRight() == null || node.getRight().isMaxNode(this.MAX_SENTINEL)) ? 0 : node.getRight().getSize();
+        int middleSize = (node.getMiddle() == null ||
+                node.getMiddle().isMaxNode(this.MAX_SENTINEL)) ? 0 : node.getMiddle().getSize();
+        int rightSize = (node.getRight() == null ||
+                node.getRight().isMaxNode(this.MAX_SENTINEL)) ? 0 : node.getRight().getSize();
         node.setSize(leftSize + middleSize + rightSize);
     }
 

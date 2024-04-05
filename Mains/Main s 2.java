@@ -20,9 +20,9 @@ class RunnerIDInt extends RunnerID{
 
 public class Main {
     public static void main(String[] args) {
-        testAddRunner();
-        /*
+        //testAddRunner();
         testLargeDataset();
+        /*
         testAddRunToRunner();
         testRemoveRunFromRunner();
         testRemoveRunner();
@@ -34,31 +34,42 @@ public class Main {
         testGetRankMin();
         stressTestRace();
         testFastestRunners();
-
          */
+
     }
 
     public static void testAddRunner() {
         System.out.println("Testing addRunner...");
 
         try {
-            RunnerIDInt id1 = new RunnerIDInt(1);
-            RunnerIDInt id2 = new RunnerIDInt(2);
+            RunnerIDInt id1 = new RunnerIDInt(-1);
+            RunnerIDInt id2 = new RunnerIDInt(-2);
             RunnerIDInt id3 = new RunnerIDInt(3);
+            RunnerIDInt id4 = new RunnerIDInt(4);
+            RunnerIDInt id5 = new RunnerIDInt(5);
+            RunnerIDInt id6 = new RunnerIDInt(6);
+            RunnerIDInt id7 = new RunnerIDInt(7);
             Race race = new Race();
             race.addRunner(id1);
             race.addRunner(id2);
-            race.addRunToRunner(id1, 100);
-            race.addRunToRunner(id2, 100);
-            race.addRunToRunner(id2, Float.MAX_VALUE);
-            race.getMinRun(id1);
-            race.getAvgRun(id1);
-            race.removeRunFromRunner(id1, 100);
-            race.removeRunFromRunner(id2, 100);
-            race.removeRunFromRunner(id2, Float.MAX_VALUE);
+            race.addRunner(id3);
+            race.addRunner(id4);
+            race.addRunner(id5);
+            race.addRunner(id6);
+            race.addRunner(id7);
             race.removeRunner(id1);
-            race.removeRunner(id2);
-            race.getAvgRun(id1);
+            race.removeRunner(id7);
+            race.removeRunner(id4);
+            race.addRunToRunner(id5, (float) 118.0);
+            race.addRunToRunner(id3, (float) 110.0);
+            race.addRunToRunner(id3, (float) 120.0);
+            race.addRunToRunner(id5, (float) 110.0);
+            race.addRunToRunner(id5, (float) 109.0);
+            race.addRunToRunner(id5, (float) 105.0);
+            race.addRunToRunner(id2, (float) 111.0);
+            race.getRankAvg(id5);
+            race.getRankAvg(id3);
+            race.getRankAvg(id7);
             System.out.println("addRunner test passed.");
         } catch (Exception e) {
             System.out.println("addRunner test failed: " + e.getMessage());
