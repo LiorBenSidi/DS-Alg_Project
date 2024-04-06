@@ -45,19 +45,6 @@ public class TwoThreeTree<T> {
         }
     }
 
-    public Node<T> minimum23() {
-        Node<T> x = this.root;
-        while (!x.isLeaf() && !x.getLeft().isMinNode(this.MIN_SENTINEL)) {
-            x = x.getLeft();
-        }
-        x = x.getParent().getMiddle();
-        if (!x.isMaxNode(this.MAX_SENTINEL)) {
-            return x;
-        } else {
-            throw new IllegalArgumentException("Tree is empty.");
-        }
-    }
-
     public Node<T> Successor23(Node<T> x) {
         if (x.getRight() != null) {
             if (!x.getRight().isMaxNode(this.MAX_SENTINEL)) {
