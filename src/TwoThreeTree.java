@@ -14,6 +14,7 @@ public class TwoThreeTree<T> {
         this.root.getMiddle().setParent(this.root);
         this.comparisonType = "ID";
         this.size = 0; // Tree is initially empty
+        this.root.setSize(0);
         this.fastestRunner = null;
     }
 
@@ -190,6 +191,7 @@ public class TwoThreeTree<T> {
         if (this.root.getLeft().isMinNode(this.MIN_SENTINEL) && this.root.getMiddle().isMaxNode(this.MAX_SENTINEL)) {
             setChildren23(this.root, this.root.getLeft(), z, this.root.getMiddle());
             this.fastestRunner = z;
+            this.root.setSize(1);
         } else {
             if (compareNodeWithNode(z, fastestRunner) < 0) {
                 fastestRunner = z;
