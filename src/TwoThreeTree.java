@@ -13,7 +13,7 @@ public class TwoThreeTree<T> {
         this.root.getLeft().setParent(this.root);
         this.root.getMiddle().setParent(this.root);
         this.comparisonType = "ID";
-        this.size = 0; // Tree is initially empty
+        this.size = 0;
         this.root.setSize(0);
         this.fastestRunner = null;
     }

@@ -1,5 +1,5 @@
 public class Runner{
-    private RunnerID ID;
+    private final RunnerID ID;
     private TwoThreeTree<Run> Runs;
     private float MinTime;
     private float AvgTime;

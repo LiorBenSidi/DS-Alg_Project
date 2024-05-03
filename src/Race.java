@@ -64,7 +64,7 @@ public class Race {
             isEmpty = true;
         }
 
-        //check if the runner is already exists
+        //check if the runner exists
         Node<Runner> nodeID = IDTree.search23(IDTree.getRoot(), new Runner(id));
         if (!isEmpty && nodeID == null) {
             throw new IllegalArgumentException("Runner with ID " + id + " already exists.");
@@ -87,20 +87,10 @@ public class Race {
     }
 
     //Version 2
-    public void addRunToRunner(RunnerID id, float time) {
-        if (id == null) {
-            throw new IllegalArgumentException("Given null");
-        }
-
-        if (time <= 0) { //checks if the time is positive
-            throw new IllegalArgumentException("the given time is not positive");
-        }
-
-        // Search for the runner in the IDTree
+    public void addRunToRunner(RunnerID id, float time)
+    {
+        checksRunnerAndRun(id, time);
         Node<Runner> searchResult = IDTree.search23(IDTree.getRoot(), new Runner(id));
-        if (searchResult == null || searchResult.getKey() == null) { //checks if the runner exists
-            throw new IllegalArgumentException("Runner with ID " + id + " not found.");
-        }
 
         Runner runnerID = searchResult.getKey(); //gets the runner of the IDTree from the search result
         Node<Runner> searchResultMinTime = MinTimeTree.search23(MinTimeTree.getRoot(), runnerID); //searches for the runner in the MinTimeTree
@@ -131,30 +121,13 @@ public class Race {
         runnerAvgTime.setAvgTime(newAvg); //sets the average time of the runner of the AvgTimeTree
 
         // re-balancing and re-ordering each of the 3 trees after the insertion of the run
-        IDTree.delete23(runnerID, null, false); //deletes the runner from the IDTree
-        IDTree.insert23(runnerID); //inserts the runner to the IDTree
-
-        MinTimeTree.delete23(runnerMimTime, searchResultMinTime, true); //deletes the runner from the MinTimeTree
-        MinTimeTree.insert23(runnerMimTime); //inserts the runner to the MinTimeTree
-
-        AvgTimeTree.delete23(runnerAvgTime, searchResultAvgTime, true); //deletes the runner from the AvgTimeTree
-        AvgTimeTree.insert23(runnerAvgTime); //inserts the runner to the AvgTimeTree
+        reBalanceTrees(runnerID, runnerMimTime, runnerAvgTime, searchResultMinTime, searchResultAvgTime);
     }
 
     public void removeRunFromRunner(RunnerID id, float time)
     {
-        if (id == null) {
-            throw new IllegalArgumentException("Given null");
-        }
-
-        if (time <= 0) { //checks if the time is positive
-            throw new IllegalArgumentException("the given time is not positive");
-        }
-
-        Node<Runner> searchResult = IDTree.search23(IDTree.getRoot(), new Runner(id)); //searches for the runner in the IDTree
-        if (searchResult == null) { //checks if the runner exists
-            throw new IllegalArgumentException("Runner with ID " + id + " not found.");
-        }
+        checksRunnerAndRun(id, time);
+        Node<Runner> searchResult = IDTree.search23(IDTree.getRoot(), new Runner(id));
 
         TwoThreeTree<Run> runs = searchResult.getKey().getRuns(); //gets the runs tree of the runner from the search result
 
@@ -208,7 +181,31 @@ public class Race {
         runnerMimTime.setAvgTime(newAvg); //sets the average time of the runner of the MinTimeTree
         runnerAvgTime.setAvgTime(newAvg); //sets the average time of the runner of the AvgTimeTree
 
-        // re-balancing and re-ordering each of the 3 trees after the deletion of the run
+
+        // re-balancing and re-ordering each of the 3 trees after the insertion of the run
+        reBalanceTrees(runnerID, runnerMimTime, runnerAvgTime, searchResultMinTime, searchResultAvgTime);
+    }
+
+    public void checksRunnerAndRun(RunnerID id, float time)
+    {
+        if (id == null) {
+            throw new IllegalArgumentException("Given null");
+        }
+
+        if (time <= 0) { //checks if the time is positive
+            throw new IllegalArgumentException("the given time is not positive");
+        }
+
+        // Search for the runner in the IDTree
+        Node<Runner> searchResult = IDTree.search23(IDTree.getRoot(), new Runner(id));
+        if (searchResult == null || searchResult.getKey() == null) { //checks if the runner exists
+            throw new IllegalArgumentException("Runner with ID " + id + " not found.");
+        }
+    }
+
+    public void reBalanceTrees(Runner runnerID, Runner runnerMimTime, Runner runnerAvgTime,
+                               Node<Runner> searchResultMinTime, Node<Runner> searchResultAvgTime) {
+        // re-balancing and re-ordering each of the 3 trees after the insertion of the run
         IDTree.delete23(runnerID, null, false); //deletes the runner from the IDTree
         IDTree.insert23(runnerID); //inserts the runner to the IDTree
 
@@ -217,41 +214,25 @@ public class Race {
 
         AvgTimeTree.delete23(runnerAvgTime, searchResultAvgTime, true); //deletes the runner from the AvgTimeTree
         AvgTimeTree.insert23(runnerAvgTime); //inserts the runner to the AvgTimeTree
-
     }
 
     public RunnerID getFastestRunnerAvg()
     {
-        //checks if the runners tree is empty
-        if (IDTree.getRoot().getLeft().isMinNode(IDTree.MIN_SENTINEL) &&
-                IDTree.getRoot().getMiddle().isMaxNode(IDTree.MAX_SENTINEL)) {
-            throw new IllegalArgumentException("No runners have been added yet.");
-        } else { //if the runners tree is not empty, get the fastest runner of the AvgTimeTree
-            return AvgTimeTree.getFastestRunner().getKey().getID();
-        }
+        return getFastestRunner(AvgTimeTree);
     }
 
     public RunnerID getFastestRunnerMin()
     {
+        return getFastestRunner(MinTimeTree);
+    }
+
+    public RunnerID getFastestRunner(TwoThreeTree<Runner> tree) {
         //checks if the runners tree is empty
         if (IDTree.getRoot().getLeft().isMinNode(IDTree.MIN_SENTINEL) &&
                 IDTree.getRoot().getMiddle().isMaxNode(IDTree.MAX_SENTINEL)) {
             throw new IllegalArgumentException("No runners have been added yet.");
-        } else { //if the runners tree is not empty, get the fastest runner of the MinTimeTree
-            return MinTimeTree.getFastestRunner().getKey().getID();
-        }
-    }
-
-    public void checkRunnerAndRunExists(RunnerID id, Node<Runner> runnerNode) {
-        if (runnerNode == null) { //checks if the runner exists
-            throw new IllegalArgumentException("Runner with ID " + id + " not found.");
-        }
-
-        Node<Run> runRoot = runnerNode.getKey().getRuns().getRoot(); //gets the root of the runs tree of the runner
-        //checks if the runner has no runs
-        if (runRoot.getLeft().isMinNode(runnerNode.getKey().getRuns().MIN_SENTINEL) &&
-                runRoot.getMiddle().isMaxNode(runnerNode.getKey().getRuns().MAX_SENTINEL)) {
-            throw new IllegalArgumentException("No runs have been added for runner with ID " + id + ".");
+        } else { //if the runners tree is not empty, get the fastest runner of the tree
+            return tree.getFastestRunner().getKey().getID();
         }
     }
 
@@ -278,23 +259,30 @@ public class Race {
         return runnerNode.getKey().getAvgTime();
     }
 
-    public int getRankAvg(RunnerID id)
-    {
-        if (id == null) {
-            throw new IllegalArgumentException("Given null");
-        }
-
-        Node<Runner> runnerNode = IDTree.search23(IDTree.getRoot(), new Runner(id));//searches for the runner in the IDTree
+    public void checkRunnerAndRunExists(RunnerID id, Node<Runner> runnerNode) {
         if (runnerNode == null) { //checks if the runner exists
             throw new IllegalArgumentException("Runner with ID " + id + " not found.");
-        } else {
-            Node<Runner> node = AvgTimeTree.search23(AvgTimeTree.getRoot(), runnerNode.getKey()); //searches for the runner in the AvgTimeTree
-            return AvgTimeTree.Rank(node);
         }
+
+        Node<Run> runRoot = runnerNode.getKey().getRuns().getRoot(); //gets the root of the runs tree of the runner
+        //checks if the runner has no runs
+        if (runRoot.getLeft().isMinNode(runnerNode.getKey().getRuns().MIN_SENTINEL) &&
+                runRoot.getMiddle().isMaxNode(runnerNode.getKey().getRuns().MAX_SENTINEL)) {
+            throw new IllegalArgumentException("No runs have been added for runner with ID " + id + ".");
+        }
+    }
+
+    public int getRankAvg(RunnerID id)
+    {
+        return getRank(id, AvgTimeTree);
     }
 
     public int getRankMin(RunnerID id)
     {
+        return getRank(id, MinTimeTree);
+    }
+
+    public int getRank(RunnerID id, TwoThreeTree<Runner> tree) {
         if (id == null) {
             throw new IllegalArgumentException("Given null");
         }
@@ -303,8 +291,8 @@ public class Race {
         if (runnerNode == null) { //checks if the runner exists
             throw new IllegalArgumentException("Runner with ID " + id + " not found.");
         } else {
-            Node<Runner> node = MinTimeTree.search23(MinTimeTree.getRoot(), runnerNode.getKey()); //searches for the runner in the MinTimeTree
-            return MinTimeTree.Rank(node);
+            Node<Runner> node = tree.search23(tree.getRoot(), runnerNode.getKey()); //searches for the runner in the tree
+            return tree.Rank(node);
         }
     }
 }
