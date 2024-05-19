@@ -532,10 +532,6 @@ public class Main
         race.addRunToRunner(id2, 4);
         race.addRunToRunner(id2, 4);
 
-
-//        //Main.printTree(race.getIdTree());
-//        Main.printTree(race.getAvgTree());
-
         race.removeRunFromRunner(id1, 1);
         try {
             race.addRunToRunner(id3, -9);
