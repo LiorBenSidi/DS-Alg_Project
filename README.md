@@ -1,5 +1,3 @@
-We've Just completed an intensive programming assignment for our Data Structures and Algorithms course, and we're thrilled to share our journey and achievements!
-
 Project Overview:
 In preparation for the upcoming Olympics, we were tasked with developing a dynamic data structure in Java to manage and efficiently query statistics about runners and their run times. The structure needed to support various operations such as adding/removing runners, recording/removing run times, and calculating statistics like the minimum and average run times.
 
